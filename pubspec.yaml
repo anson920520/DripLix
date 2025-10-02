@@ -1,0 +1,31 @@
+name: driplix
+description: A picture feed app like Pinterest - cross-platform for iOS, web, and Android
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  
+  # Assets configuration
+  assets:
+    - assets/images/logos/
+    - assets/images/navigation/
+    - assets/images/icons/
+    - assets/images/homepage/
+    - assets/images/signup/
+    - assets/images/signin/

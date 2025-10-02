@@ -1,0 +1,16 @@
+# Placeholder for feature icons
+
+This directory contains general app icons for features.
+
+Suggested files:
+- explore_icon.png (40x40px)
+- save_icon.png (40x40px)
+- share_icon.png (40x40px)
+
+All images should be:
+- PNG format with transparency
+- Black and white theme
+- High resolution for retina displays
+- Transparent background
+
+These can be used to replace the default Material icons in the project description section.
