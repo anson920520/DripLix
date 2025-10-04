@@ -21,25 +21,13 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -61,4 +49,41 @@ class DefaultFirebaseOptions {
     storageBucket: 'driplix-9ce7a.firebasestorage.app',
     measurementId: 'G-PJS78P0FZE',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyC6Pa9gDP8lzZEHZNxWo6imwuY1ZBqgHaY',
+    appId: '1:343567827965:ios:554183a86f7adf9898cf94',
+    messagingSenderId: '343567827965',
+    projectId: 'driplix-9ce7a',
+    storageBucket: 'driplix-9ce7a.firebasestorage.app',
+    iosBundleId: 'com.driplix.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyC6Pa9gDP8lzZEHZNxWo6imwuY1ZBqgHaY',
+    appId: '1:343567827965:ios:554183a86f7adf9898cf94',
+    messagingSenderId: '343567827965',
+    projectId: 'driplix-9ce7a',
+    storageBucket: 'driplix-9ce7a.firebasestorage.app',
+    iosBundleId: 'com.driplix.app',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyBsDPecTSoz4DYp5X9bOHgduuzMN6RssJM',
+    appId: '1:343567827965:android:83cd86d62ab34b9798cf94',
+    messagingSenderId: '343567827965',
+    projectId: 'driplix-9ce7a',
+    storageBucket: 'driplix-9ce7a.firebasestorage.app',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyABIlo36ZehJbxxzrlCeC44OyKCWo6HgIg',
+    appId: '1:343567827965:web:73c03ad3bd93b9ce98cf94',
+    messagingSenderId: '343567827965',
+    projectId: 'driplix-9ce7a',
+    authDomain: 'driplix-9ce7a.firebaseapp.com',
+    storageBucket: 'driplix-9ce7a.firebasestorage.app',
+    measurementId: 'G-SLX2BXSLHD',
+  );
+
 }
