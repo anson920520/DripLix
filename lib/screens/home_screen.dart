@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/navigation_bar.dart';
 import '../widgets/signup_popup.dart';
 import '../widgets/signin_popup.dart';
+import '../services/firebase_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,8 +24,34 @@ class _HomeScreenState extends State<HomeScreen> {
     'assets/images/homepage/carousel_template_image_2.png',
   ];
 
+    @override
+  void initState() {
+    super.initState();
+    _testFirebaseConnection();
+  }
+
+  void _testFirebaseConnection() {
+    // Access FirebaseService through Provider
+    final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+    
+    print('✅ Firebase Service accessed via Provider');
+    print('✅ Current user: ${firebaseService.currentUser}');
+    
+    // Listen to auth state changes
+    firebaseService.authStateChanges.listen((User? user) {
+      if (user != null) {
+        print('✅ User signed in: ${user.email}');
+      } else {
+        print('✅ No user signed in');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    final firebaseService = Provider.of<FirebaseService>(context);
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
