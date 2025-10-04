@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'screens/explore_screen.dart';
 import 'screens/terms_screen.dart';
 import 'screens/privacy_screen.dart';
 
@@ -41,8 +42,10 @@ class DripLixApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
+        '/explore': (context) => const ExploreScreen(),
         '/terms': (context) => const TermsScreen(),
         '/privacy': (context) => const PrivacyScreen(),
+        // Post route will be pushed via MaterialPageRoute with arguments, keep here for reference
       },
       debugShowCheckedModeBanner: false,
     );
