@@ -40,7 +40,7 @@ class FirebaseService {
         email: email.trim(),
         password: password,
       );
-
+  
       if (credential.user != null) {
         await _firestore.collection('users').doc(credential.user!.uid).set({
           'username': username,

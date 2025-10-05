@@ -4,6 +4,8 @@ import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_receiver.dart';
 import '../config/debug_flags.dart';
+import 'package:provider/provider.dart';
+import '../services/firebase_service.dart';
 
 class SignUpPopup extends StatefulWidget {
   final VoidCallback? onClose;
@@ -52,92 +54,109 @@ class _SignUpPopupState extends State<SignUpPopup> {
     super.dispose();
   }
 
-  void _handleSignUp() {
-    // Validate all fields
-    Map<String, String?> errors = {};
+Future<void> _handleSignUp() async {
+  // Validate all fields
+  Map<String, String?> errors = {};
 
-    if (_usernameController.text.isEmpty) {
-      errors['username'] = 'Username is required';
-    }
+  if (_usernameController.text.isEmpty) {
+    errors['username'] = 'Username is required';
+  }
 
-    if (_emailController.text.isEmpty) {
-      errors['email'] = 'Email is required';
-    } else if (!_emailController.text.contains('@')) {
-      errors['email'] = 'Please enter a valid email';
-    }
+  if (_emailController.text.isEmpty) {
+    errors['email'] = 'Email is required';
+  } else if (!_emailController.text.contains('@')) {
+    errors['email'] = 'Please enter a valid email';
+  }
 
-    if (_verificationCodeController.text.isEmpty) {
-      errors['verificationCode'] = 'Verification code is required';
-    }
+  if (_verificationCodeController.text.isEmpty) {
+    errors['verificationCode'] = 'Verification code is required';
+  }
 
-    if (_passwordController.text.isEmpty) {
-      errors['password'] = 'Password is required';
-    } else if (_passwordController.text.length < 6) {
-      errors['password'] = 'Password must be at least 6 characters';
-    }
+  if (_passwordController.text.isEmpty) {
+    errors['password'] = 'Password is required';
+  } else if (_passwordController.text.length < 6) {
+    errors['password'] = 'Password must be at least 6 characters';
+  }
 
-    if (_confirmPasswordController.text.isEmpty) {
-      errors['confirmPassword'] = 'Please confirm your password';
-    } else if (_confirmPasswordController.text != _passwordController.text) {
-      errors['confirmPassword'] = 'Passwords do not match';
-    }
+  if (_confirmPasswordController.text.isEmpty) {
+    errors['confirmPassword'] = 'Please confirm your password';
+  } else if (_confirmPasswordController.text != _passwordController.text) {
+    errors['confirmPassword'] = 'Passwords do not match';
+  }
 
-    if (_genderController.text.isEmpty) {
-      errors['gender'] = 'Please select your gender';
-    }
+  if (_genderController.text.isEmpty) {
+    errors['gender'] = 'Please select your gender';
+  }
 
-    if (!_agreeTerms) {
-      errors['terms'] = 'You must agree to Terms & Conditions';
-    }
+  if (!_agreeTerms) {
+    errors['terms'] = 'You must agree to Terms & Conditions';
+  }
 
-    setState(() {
-      _fieldErrors = errors;
-    });
+  setState(() {
+    _fieldErrors = errors;
+  });
 
-    // If no errors, proceed with sign up
-    if (errors.isEmpty) {
-      final receiver = const AuthReceiverService();
-      receiver
-          .receiveSignUp(
-        username: _usernameController.text,
+  // If no errors, proceed with sign up
+  if (errors.isEmpty) {
+    try {
+      final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+      final user = await firebaseService.signUpWithEmailAndPassword(
         email: _emailController.text,
-        verificationCode: _verificationCodeController.text,
         password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
+        username: _usernameController.text,
         gender: _genderController.text,
-        agreeTerms: _agreeTerms,
-        agreeMarketing: _agreeMarketing,
-      )
-          .then((payload) {
-        // TEST-ONLY: show submitted payload in a dialog for verification.
-        // To remove later, delete this block or set DebugFlags.showAuthTestDialogs = false.
-        if (DebugFlags.showAuthTestDialogs) {
-          showDialog(
-            context: context,
-            builder: (ctx) {
-              return AlertDialog(
-                title: const Text('Sign-Up Data Received (Test)'),
-                content: SingleChildScrollView(
-                  child: Text(payload.toString()),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                      widget.onClose?.call();
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
+      );
+
+      // SUCCESS - Show success alert
+      showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Sign Up Successful!'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Welcome, ${user?.email ?? "User"}!'), // ← CHANGED HERE
+                const SizedBox(height: 8),
+                const Text('Your account has been created successfully.'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  widget.onClose?.call(); // Close the signup popup
+                },
+                child: const Text('OK'),
+              ),
+            ],
           );
-        } else {
-          widget.onClose?.call();
-        }
-      });
+        },
+      );
+
+    } catch (e) {
+      // ERROR - Show error alert
+      showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Sign Up Failed'),
+            content: Text('Error: $e'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
+}
 
   void _toggleGenderDropdown() {
     try {

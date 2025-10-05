@@ -2,7 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/auth_receiver.dart';
+import 'package:provider/provider.dart';
+import '../services/firebase_service.dart';
 import '../config/debug_flags.dart';
 
 class SignInPopup extends StatefulWidget {
@@ -21,37 +22,25 @@ class SignInPopup extends StatefulWidget {
 
 class _SignInPopupState extends State<SignInPopup> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _accountTypeController = TextEditingController();
-  final TextEditingController _emailOrUsernameController =
-      TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final GlobalKey _accountTypeFieldKey = GlobalKey();
-  double? _dropdownTop;
-  double? _dropdownLeft;
-
-  bool _isListUnfolded = false;
-  bool _isAccountTypeDropdownOpen = false;
+  bool _isLoading = false;
 
   Map<String, String?> _fieldErrors = {};
 
   @override
   void dispose() {
-    _accountTypeController.dispose();
-    _emailOrUsernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleSignIn() {
+  Future<void> _handleSignIn() async {
     Map<String, String?> errors = {};
 
-    if (_accountTypeController.text.isEmpty) {
-      errors['account type'] = 'Please select an account type';
-    }
-
-    if (_emailOrUsernameController.text.isEmpty) {
-      errors['email or username'] = 'Email or username is required';
+    if (_emailController.text.isEmpty) {
+      errors['email'] = 'Email is required';
     }
 
     if (_passwordController.text.isEmpty) {
@@ -63,68 +52,68 @@ class _SignInPopupState extends State<SignInPopup> {
     });
 
     if (errors.isEmpty) {
-      final receiver = const AuthReceiverService();
-      receiver
-          .receiveSignIn(
-        accountType: _accountTypeController.text,
-        emailOrUsername: _emailOrUsernameController.text,
-        password: _passwordController.text,
-      )
-          .then((payload) {
-        // TEST-ONLY: show submitted payload in a dialog for verification.
-        // To remove later, delete this block or set DebugFlags.showAuthTestDialogs = false.
-        if (DebugFlags.showAuthTestDialogs) {
-          showDialog(
-            context: context,
-            builder: (ctx) {
-              return AlertDialog(
-                title: const Text('Sign-In Data Received (Test)'),
-                content: SingleChildScrollView(
-                  child: Text(payload.toString()),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                      widget.onClose?.call();
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        } else {
-          widget.onClose?.call();
-        }
+      setState(() {
+        _isLoading = true;
       });
-    }
-  }
 
-  void _toggleAccountTypeDropdown() {
-    try {
-      final BuildContext? fieldContext = _accountTypeFieldKey.currentContext;
-      final RenderObject? stackRenderObject = context.findRenderObject();
-      if (fieldContext != null && stackRenderObject is RenderBox) {
-        final RenderBox fieldBox = fieldContext.findRenderObject() as RenderBox;
-        final Offset globalTopLeft = fieldBox.localToGlobal(Offset.zero);
-        final Offset topLeftInStack =
-            stackRenderObject.globalToLocal(globalTopLeft);
+      try {
+        final firebaseService = Provider.of<FirebaseService>(context, listen: false);
+        final user = await firebaseService.signInWithEmailAndPassword(
+          _emailController.text,
+          _passwordController.text,
+        );
 
+        showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: const Text('Sign In Successful!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Welcome back, ${user?.email ?? "User"}!'),
+                  const SizedBox(height: 8),
+                  const Text('You have successfully signed in.'),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    widget.onClose?.call();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+
+      } catch (e) {
+        showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: const Text('Sign In Failed'),
+              content: Text('Error: $e'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      } finally {
         setState(() {
-          _dropdownLeft = topLeftInStack.dx;
-          _dropdownTop = topLeftInStack.dy + fieldBox.size.height + 6.0;
-          _isAccountTypeDropdownOpen = !_isAccountTypeDropdownOpen;
-          _isListUnfolded = _isAccountTypeDropdownOpen;
+          _isLoading = false;
         });
-        return;
       }
-    } catch (_) {}
-
-    setState(() {
-      _isAccountTypeDropdownOpen = !_isAccountTypeDropdownOpen;
-      _isListUnfolded = _isAccountTypeDropdownOpen;
-    });
+    }
   }
 
   @override
@@ -132,15 +121,15 @@ class _SignInPopupState extends State<SignInPopup> {
     final screenSize = MediaQuery.of(context).size;
     final hasErrors = _fieldErrors.isNotEmpty;
 
-    double windowHeight = 415.0;
+    double windowHeight = 380.0; // Reduced height since we removed account type
     if (hasErrors) {
-      final baseHeight = 415.0;
+      final baseHeight = 380.0;
       final errorCount = _fieldErrors.length;
       final errorSpace = errorCount * 20.0;
       final buffer = 40.0;
       windowHeight = baseHeight + errorSpace + buffer;
       final maxHeight = screenSize.height * 0.9;
-      windowHeight = windowHeight.clamp(415.0, maxHeight);
+      windowHeight = windowHeight.clamp(380.0, maxHeight);
     }
 
     return DefaultTextStyle(
@@ -174,13 +163,11 @@ class _SignInPopupState extends State<SignInPopup> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildAccountTypeField(),
-                            const SizedBox(height: 14),
                             _buildInputField(
-                              controller: _emailOrUsernameController,
-                              label: 'Email or Username',
+                              controller: _emailController,
+                              label: 'Email',
                               hasCancelButton: true,
-                              errorMessage: _fieldErrors['email or username'],
+                              errorMessage: _fieldErrors['email'],
                             ),
                             const SizedBox(height: 14),
                             _buildInputField(
@@ -205,7 +192,6 @@ class _SignInPopupState extends State<SignInPopup> {
               ),
             ),
           ),
-          if (_isAccountTypeDropdownOpen) _buildAccountTypeDropdownOverlay(),
         ],
       ),
     );
@@ -354,185 +340,6 @@ class _SignInPopupState extends State<SignInPopup> {
     );
   }
 
-  Widget _buildAccountTypeField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          key: _accountTypeFieldKey,
-          width: 350,
-          height: 50,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE6E0E9),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Account Type',
-                      style: GoogleFonts.notoSerif(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: const Color(0xFF666666),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Expanded(
-                      child: Container(
-                        constraints: const BoxConstraints(maxHeight: 32),
-                        child: TextFormField(
-                          controller: _accountTypeController,
-                          readOnly: true,
-                          style: GoogleFonts.notoSerif(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: const Color(0xFF333333),
-                            height: 1.2,
-                          ),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                            hintText: 'Select',
-                          ),
-                          onTap: _toggleAccountTypeDropdown,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 5,
-                right: 5,
-                child: InkWell(
-                  onTap: _toggleAccountTypeDropdown,
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Image.asset(
-                      _isListUnfolded
-                          ? 'assets/images/signin/unfolded_list_icon.png'
-                          : 'assets/images/signin/folded_list_icon.png',
-                      width: 20,
-                      height: 20,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            _isListUnfolded
-                                ? Icons.expand_less
-                                : Icons.expand_more,
-                            size: 20,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (_fieldErrors['account type'] != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4, left: 4),
-            child: Text(
-              _fieldErrors['account type']!,
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 10,
-                height: 1.1,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildAccountTypeDropdownOverlay() {
-    final double effectiveTop = _dropdownTop ?? 0.0;
-    final double effectiveLeft = _dropdownLeft ?? 24.0;
-
-    return Positioned(
-      top: effectiveTop,
-      left: effectiveLeft,
-      child: Material(
-        elevation: 8,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 350,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              _buildAccountTypeOption('Individual'),
-              _buildAccountTypeOption('Businesses'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAccountTypeOption(String option) {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _accountTypeController.text = option;
-          _isAccountTypeDropdownOpen = false;
-          _isListUnfolded = false;
-          if (_fieldErrors['account type'] != null) {
-            _fieldErrors['account type'] = null;
-          }
-        });
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Color(0xFFE0E0E0),
-              width: 1,
-            ),
-          ),
-        ),
-        child: Text(
-          option,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildForgotPassword() {
     return Align(
       alignment: Alignment.centerLeft,
@@ -560,7 +367,7 @@ class _SignInPopupState extends State<SignInPopup> {
   Widget _buildSignInButton() {
     return Center(
       child: InkWell(
-        onTap: _handleSignIn,
+        onTap: _isLoading ? null : _handleSignIn,
         child: Container(
           width: 100,
           height: 40,
@@ -574,32 +381,43 @@ class _SignInPopupState extends State<SignInPopup> {
               ),
             ],
           ),
-          child: Image.asset(
-            'assets/images/navigation/Sign_in_tab.png',
-            width: 100,
-            height: 40,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 100,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF6750A4),
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                ),
-                child: Center(
-                  child: Text(
-                    'Sign In',
-                    style: GoogleFonts.notoSerif(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+          child: _isLoading
+              ? const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
+                )
+              : Image.asset(
+                  'assets/images/navigation/Sign_in_tab.png',
+                  width: 100,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 100,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF6750A4),
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Sign In',
+                          style: GoogleFonts.notoSerif(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
       ),
     );
