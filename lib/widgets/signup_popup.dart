@@ -96,8 +96,12 @@ Future<void> _handleSignUp() async {
     _fieldErrors = errors;
   });
 
+  print('🔍 Sign-up validation completed. Errors: ${errors.length}');
+
   // If no errors, proceed with sign up
   if (errors.isEmpty) {
+    print('🚀 Starting Firebase sign-up process...');
+    
     try {
       final firebaseService = Provider.of<FirebaseService>(context, listen: false);
       final user = await firebaseService.signUpWithEmailAndPassword(
@@ -106,6 +110,8 @@ Future<void> _handleSignUp() async {
         username: _usernameController.text,
         gender: _genderController.text,
       );
+
+      print('✅ Firebase sign-up successful! User: ${user?.email}');
 
       // SUCCESS - Show success alert
       showDialog(
@@ -117,7 +123,7 @@ Future<void> _handleSignUp() async {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Welcome, ${user?.email ?? "User"}!'), // ← CHANGED HERE
+                Text('Welcome, ${user?.email ?? "User"}!'),
                 const SizedBox(height: 8),
                 const Text('Your account has been created successfully.'),
               ],
@@ -125,7 +131,8 @@ Future<void> _handleSignUp() async {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(ctx).pop();
+                  print('🔄 Closing success dialog and popup...');
+                  Navigator.of(ctx).pop(); // Close the dialog
                   widget.onClose?.call(); // Close the signup popup
                 },
                 child: const Text('OK'),
@@ -133,9 +140,13 @@ Future<void> _handleSignUp() async {
             ],
           );
         },
-      );
+      ).then((_) {
+        print('✅ Success dialog closed');
+      });
 
     } catch (e) {
+      print('❌ Firebase sign-up error: $e');
+      
       // ERROR - Show error alert
       showDialog(
         context: context,
@@ -155,6 +166,8 @@ Future<void> _handleSignUp() async {
         },
       );
     }
+  } else {
+    print('❌ Validation errors prevented sign-up');
   }
 }
 
