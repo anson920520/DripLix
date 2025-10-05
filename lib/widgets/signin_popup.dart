@@ -165,7 +165,7 @@ class _SignInPopupState extends State<SignInPopup> {
                           children: [
                             _buildInputField(
                               controller: _emailController,
-                              label: 'Email',
+                              label: 'Email or Username',
                               hasCancelButton: true,
                               errorMessage: _fieldErrors['email'],
                             ),
