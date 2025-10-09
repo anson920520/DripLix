@@ -77,9 +77,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                   children: [
                     // Logo on the left
                     Image.asset(
-                      widget.showSearchBar
-                          ? 'assets/images/navigation/Searchbar/Logo.png'
-                          : 'assets/images/navigation/Driplix Logo.png',
+                      'assets/images/navigation/Driplix Logo.png',
                       height: isCompact ? 32 : 40,
                       errorBuilder: (context, error, stackTrace) {
                         return Text(

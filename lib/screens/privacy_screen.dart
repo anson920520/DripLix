@@ -151,6 +151,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               Navigator.of(context).pushNamed('/privacy');
             } else if (text == 'About') {
               Navigator.of(context).pushNamed('/');
+            } else if (text == 'Businesses') {
+              Navigator.of(context).pushNamed('/business');
             } else {
               debugPrint('Tapped: $text');
             }

@@ -29,6 +29,7 @@ flutter:
     - assets/images/navigation/Searchbar/
     - assets/images/icons/
     - assets/images/homepage/
+    - assets/images/wardrobe/
     - assets/images/signup/
     - assets/images/signin/
     - assets/images/post/

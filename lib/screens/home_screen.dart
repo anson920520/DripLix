@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/logged_in_navigation_bar.dart';
+import '../services/auth_state.dart';
 import '../widgets/signup_popup.dart';
 import '../widgets/signin_popup.dart';
 
@@ -23,30 +25,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    if (isLoggedIn) {
+      // Redirect logged-in users to Explore as their home page.
+      // Use addPostFrameCallback to avoid setState during build.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && ModalRoute.of(context)?.settings.name != '/explore') {
+          Navigator.of(context).pushReplacementNamed('/explore');
+        }
+      });
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
           Column(
             children: [
-              CustomNavigationBar(
-                isListUnfolded: _isListUnfolded,
-                onListToggle: () {
-                  setState(() {
-                    _isListUnfolded = !_isListUnfolded;
-                  });
-                },
-                onSignUp: () {
-                  setState(() {
-                    _showSignUpPopup = true;
-                  });
-                },
-                onSignIn: () {
-                  setState(() {
-                    _showSignInPopup = true;
-                  });
-                },
-              ),
+              isLoggedIn
+                  ? const LoggedInNavigationBar()
+                  : CustomNavigationBar(
+                      isListUnfolded: _isListUnfolded,
+                      onListToggle: () {
+                        setState(() {
+                          _isListUnfolded = !_isListUnfolded;
+                        });
+                      },
+                      onSignUp: () {
+                        setState(() {
+                          _showSignUpPopup = true;
+                        });
+                      },
+                      onSignIn: () {
+                        setState(() {
+                          _showSignInPopup = true;
+                        });
+                      },
+                    ),
               Expanded(
                 child: Stack(
                   children: [
@@ -212,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           // Dropdown list when unfolded
-          if (_isListUnfolded)
+          if (!isLoggedIn && _isListUnfolded)
             Positioned(
               top: 108, // Position below navigation bar
               right: 10, // Align with the folded list button
@@ -320,7 +334,9 @@ class _HomeScreenState extends State<HomeScreen> {
             } else if (text == 'Privacy Policy') {
               Navigator.of(context).pushNamed('/privacy');
             } else if (text == 'About') {
-              Navigator.of(context).pushNamed('/');
+              Navigator.of(context).pushNamed('/about');
+            } else if (text == 'Businesses') {
+              Navigator.of(context).pushNamed('/business');
             } else {
               debugPrint('Tapped: $text');
             }

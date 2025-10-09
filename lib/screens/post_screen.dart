@@ -3,7 +3,11 @@ import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/navigation_bar.dart';
+import '../widgets/logged_in_navigation_bar.dart';
 import '../services/explore_repository.dart';
+import '../widgets/signin_popup.dart';
+import '../widgets/signup_popup.dart';
+import '../services/auth_state.dart';
 
 class _DragScrollBehavior extends MaterialScrollBehavior {
   const _DragScrollBehavior();
@@ -19,6 +23,7 @@ class _DragScrollBehavior extends MaterialScrollBehavior {
 
 class PostScreen extends StatefulWidget {
   final String postId;
+
   const PostScreen({
     super.key,
     required this.postId,
@@ -37,6 +42,13 @@ class _PostScreenState extends State<PostScreen> {
   static const int _pageSize = 24;
   PostDetail? _detail;
   bool _isLoadingDetail = false;
+  final List<Size?> _imageSizes = <Size?>[];
+
+  // Nav interactions
+  bool _isListUnfolded = false;
+  String? _hoveredItem;
+  bool _showSignUpPopup = false;
+  bool _showSignInPopup = false;
 
   // Actions state
   bool _liked = false;
@@ -96,7 +108,11 @@ class _PostScreenState extends State<PostScreen> {
         // Initialize counts for demo purposes
         _likeCount = (detail.id.hashCode.abs() % 500) + 20;
         _viewCount = (detail.id.hashCode.abs() % 5000) + 200;
+        _imageSizes
+          ..clear()
+          ..addAll(List<Size?>.filled(detail.imageUrls.length, null));
       });
+      _resolveImageSizes();
     } finally {
       if (mounted) {
         setState(() {
@@ -106,99 +122,286 @@ class _PostScreenState extends State<PostScreen> {
     }
   }
 
+  void _resolveImageSizes() {
+    if (_detail == null) return;
+    for (int i = 0; i < _detail!.imageUrls.length; i++) {
+      final String url = _detail!.imageUrls[i];
+      final AssetImage provider = AssetImage(url);
+      final ImageStream stream = provider.resolve(const ImageConfiguration());
+      late final ImageStreamListener listener;
+      listener = ImageStreamListener((ImageInfo info, bool sync) {
+        final double w = info.image.width.toDouble();
+        final double h = info.image.height.toDouble();
+        if (mounted) {
+          setState(() {
+            if (i < _imageSizes.length) {
+              _imageSizes[i] = Size(w, h);
+            }
+          });
+        }
+        stream.removeListener(listener);
+      }, onError: (dynamic _, __) {
+        stream.removeListener(listener);
+      });
+      stream.addListener(listener);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
+      body: Stack(
         children: [
-          CustomNavigationBar(
-            isListUnfolded: false,
-            onListToggle: () {},
-            showSearchBar: true,
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1370),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _isLoadingDetail
-                            ? const SizedBox(
-                                height: 200,
-                                child: Center(
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2)),
-                              )
-                            : _detail == null
+          Column(
+            children: [
+              isLoggedIn
+                  ? const LoggedInNavigationBar()
+                  : CustomNavigationBar(
+                      isListUnfolded: _isListUnfolded,
+                      onListToggle: () {
+                        setState(() {
+                          _isListUnfolded = !_isListUnfolded;
+                        });
+                      },
+                      onSignUp: () {
+                        setState(() {
+                          _showSignUpPopup = true;
+                        });
+                      },
+                      onSignIn: () {
+                        setState(() {
+                          _showSignInPopup = true;
+                        });
+                      },
+                      showSearchBar: true,
+                    ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1370),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _isLoadingDetail
                                 ? const SizedBox(
                                     height: 200,
                                     child: Center(
-                                        child: Text('Failed to load post')),
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2)),
                                   )
-                                : _buildPostCard(),
-                        const SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: Text(
-                              'Explore more',
-                              style: GoogleFonts.notoSerif(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
+                                : _detail == null
+                                    ? const SizedBox(
+                                        height: 200,
+                                        child: Center(
+                                            child: Text('Failed to load post')),
+                                      )
+                                    : _buildPostCard(),
+                            const SizedBox(height: 24),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: Text(
+                                  'Explore more',
+                                  style: GoogleFonts.notoSerif(
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        _buildExploreMoreGrid(),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: Colors.black12,
-                                disabledForegroundColor: Colors.white70,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                                textStyle: const TextStyle(
-                                    fontWeight: FontWeight.w600),
+                            _buildExploreMoreJustified(),
+                            Center(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16.0),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.black12,
+                                    disabledForegroundColor: Colors.white70,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 12),
+                                    textStyle: const TextStyle(
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                  onPressed:
+                                      _isLoadingMore ? null : () => _loadMore(),
+                                  child: _isLoadingMore
+                                      ? const SizedBox(
+                                          height: 16,
+                                          width: 16,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2))
+                                      : const Text('Load more'),
+                                ),
                               ),
-                              onPressed:
-                                  _isLoadingMore ? null : () => _loadMore(),
-                              child: _isLoadingMore
-                                  ? const SizedBox(
-                                      height: 16,
-                                      width: 16,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2))
-                                  : const Text('Load more'),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
+          if (!isLoggedIn && _isListUnfolded)
+            Positioned(
+              top: 108,
+              right: 10,
+              child: Container(
+                width: 186,
+                height: 248,
+                color: const Color(0xFFEBE6EB),
+                child: Column(
+                  children: [
+                    _buildDropdownItem('About'),
+                    _buildDropdownItem('Businesses'),
+                    _buildDropdownItem('Terms of Service'),
+                    _buildDropdownItem('Privacy Policy'),
+                  ],
+                ),
+              ),
+            ),
+          if (_showSignUpPopup)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: SignUpPopup(
+                onClose: () {
+                  setState(() {
+                    _showSignUpPopup = false;
+                  });
+                },
+                onSignIn: () {
+                  setState(() {
+                    _showSignUpPopup = false;
+                    _showSignInPopup = true;
+                  });
+                },
+              ),
+            ),
+          if (_showSignInPopup)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: SignInPopup(
+                onClose: () {
+                  setState(() {
+                    _showSignInPopup = false;
+                  });
+                },
+                onSignUp: () {
+                  setState(() {
+                    _showSignInPopup = false;
+                    _showSignUpPopup = true;
+                  });
+                },
+              ),
+            ),
         ],
       ),
     );
   }
 
+  Widget _buildDropdownItem(String text) {
+    final bool isHovered = _hoveredItem == text;
+
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() {
+          _hoveredItem = text;
+        });
+      },
+      onExit: (_) {
+        setState(() {
+          _hoveredItem = null;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        transform: Matrix4.identity()..scale(isHovered ? 1.05 : 1.0),
+        child: InkWell(
+          onTap: () {
+            if (text == 'Terms of Service') {
+              Navigator.of(context).pushNamed('/terms');
+            } else if (text == 'Privacy Policy') {
+              Navigator.of(context).pushNamed('/privacy');
+            } else if (text == 'About') {
+              Navigator.of(context).pushNamed('/about');
+            } else if (text == 'Businesses') {
+              Navigator.of(context).pushNamed('/business');
+            }
+            setState(() {
+              _isListUnfolded = false;
+            });
+          },
+          child: Container(
+            width: 186,
+            height: 62,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            decoration: BoxDecoration(
+              color: isHovered
+                  ? Colors.white.withOpacity(0.3)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(4.0),
+              boxShadow: isHovered
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4.0,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Center(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isHovered ? Colors.black87 : Colors.black,
+                  fontWeight: isHovered ? FontWeight.w600 : FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPostCard() {
+    // Compute display size for current image (bigger: up to 480x720)
+    const double maxImageWidth = 480;
+    const double maxImageHeight = 720;
+    Size? natural = (_currentIndex < _imageSizes.length)
+        ? _imageSizes[_currentIndex]
+        : null;
+    double displayW = maxImageWidth;
+    double displayH = maxImageHeight;
+    if (natural != null && natural.width > 0 && natural.height > 0) {
+      final double scaleW = maxImageWidth / natural.width;
+      final double scaleH = maxImageHeight / natural.height;
+      final double scale = scaleW < scaleH ? scaleW : scaleH;
+      displayW = natural.width * scale;
+      displayH = natural.height * scale;
+    }
+    final double dotsAndGap = 24; // dots + spacing below image
+    final double cardHeight =
+        (displayH + dotsAndGap) + 32; // include vertical padding 16*2
+
     return Container(
       width: 900,
-      height: 540,
+      height: cardHeight,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -217,68 +420,115 @@ class _PostScreenState extends State<PostScreen> {
           children: [
             // Left column: image pager + dots below
             SizedBox(
-              width: 320,
+              width: displayW,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: SizedBox(
-                      width: 320,
-                      height: 480,
-                      child: PageView.builder(
-                        itemCount: _detail!.imageUrls.length,
-                        onPageChanged: (int idx) {
-                          setState(() {
-                            _currentIndex = idx;
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          final String url = _detail!.imageUrls[index];
-                          return Image.asset(
-                            url,
-                            width: 320,
-                            height: 480,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[200],
-                                child: const Center(
-                                  child: Icon(Icons.broken_image,
-                                      color: Colors.black45),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final double maxW = maxImageWidth;
+                      final double maxH = maxImageHeight;
+                      final Size? natCur = (_currentIndex < _imageSizes.length)
+                          ? _imageSizes[_currentIndex]
+                          : null;
+                      double outerW = displayW;
+                      double outerH = displayH;
+                      if (natCur != null &&
+                          natCur.width > 0 &&
+                          natCur.height > 0) {
+                        final double scaleW = maxW / natCur.width;
+                        final double scaleH = maxH / natCur.height;
+                        final double scale = scaleW < scaleH ? scaleW : scaleH;
+                        outerW = natCur.width * scale;
+                        outerH = natCur.height * scale;
+                      }
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: SizedBox(
+                              width: outerW,
+                              height: outerH,
+                              child: PageView.builder(
+                                itemCount: _detail!.imageUrls.length,
+                                onPageChanged: (int idx) {
+                                  setState(() {
+                                    _currentIndex = idx;
+                                  });
+                                },
+                                itemBuilder: (context, index) {
+                                  final String url = _detail!.imageUrls[index];
+                                  // compute page-specific display size
+                                  Size? nat = (index < _imageSizes.length)
+                                      ? _imageSizes[index]
+                                      : null;
+                                  double w = outerW;
+                                  double h = outerH;
+                                  if (nat != null &&
+                                      nat.width > 0 &&
+                                      nat.height > 0) {
+                                    final double sW = maxImageWidth / nat.width;
+                                    final double sH =
+                                        maxImageHeight / nat.height;
+                                    final double s = sW < sH ? sW : sH;
+                                    w = nat.width * s;
+                                    h = nat.height * s;
+                                  }
+                                  return Center(
+                                    child: Image.asset(
+                                      url,
+                                      width: w,
+                                      height: h,
+                                      fit: BoxFit.contain,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Container(
+                                          width: w,
+                                          height: h,
+                                          color: Colors.grey[200],
+                                          child: const Center(
+                                            child: Icon(Icons.broken_image,
+                                                color: Colors.black45),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              ).letWithScrollConfig(),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List<Widget>.generate(
+                                _detail!.imageUrls.length, (int i) {
+                              final bool active = i == _currentIndex;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                width: active ? 8 : 6,
+                                height: active ? 8 : 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(6),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 2,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
                                 ),
                               );
-                            },
-                          );
-                        },
-                      ).letWithScrollConfig(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List<Widget>.generate(_detail!.imageUrls.length,
-                        (int i) {
-                      final bool active = i == _currentIndex;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: active ? 8 : 6,
-                        height: active ? 8 : 6,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(6),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
+                            }),
+                          ),
+                        ],
                       );
-                    }),
+                    },
                   ),
                 ],
               ),
@@ -295,7 +545,7 @@ class _PostScreenState extends State<PostScreen> {
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 24,
+                          radius: 18,
                           backgroundColor: Colors.grey[300],
                           backgroundImage: const AssetImage(
                               'assets/images/post/Generic avatar.png'),
@@ -305,7 +555,7 @@ class _PostScreenState extends State<PostScreen> {
                         Text(
                           _detail!.userName,
                           style: GoogleFonts.notoSerif(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: Colors.black,
                           ),
@@ -346,46 +596,115 @@ class _PostScreenState extends State<PostScreen> {
     );
   }
 
-  Widget _buildExploreMoreGrid() {
+  // Explore-more: same justified layout as Explore page
+  Widget _buildExploreMoreJustified() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double availableWidth = constraints.maxWidth;
-        const int crossAxisCount = 4;
-        final double spacing = 16;
-        final double tileWidth =
-            (availableWidth - (spacing * (crossAxisCount - 1))) /
-                crossAxisCount;
-        final double tileHeight = tileWidth * 1.2;
-        final int paddedCount = _morePosts.isEmpty
-            ? 0
-            : ((_morePosts.length + crossAxisCount - 1) ~/ crossAxisCount) *
-                crossAxisCount;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisSpacing: spacing,
-            crossAxisSpacing: spacing,
-            childAspectRatio: tileWidth / tileHeight,
-          ),
-          itemCount: paddedCount,
-          itemBuilder: (context, index) {
-            final int safeLength = _morePosts.length;
-            final String asset = _morePosts[index % safeLength].imageUrl;
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  image: DecorationImage(
-                    image: AssetImage(asset),
-                    fit: BoxFit.cover,
+        final double maxWidth = constraints.maxWidth;
+        const double spacing = 16;
+        const double targetRowHeight = 260;
+
+        // Group into rows
+        final List<List<ExplorePost>> rowsData = <List<ExplorePost>>[];
+        List<ExplorePost> currentRow = <ExplorePost>[];
+        double aspectSum = 0.0;
+        for (final ExplorePost post in _morePosts) {
+          final double aspect = (post.width > 0 && post.height > 0)
+              ? (post.width / post.height)
+              : 1.0;
+          final double prosAspectSum = aspectSum + aspect;
+          final int prosCount = currentRow.length + 1;
+          final double totalSpacing = spacing * (prosCount - 1);
+          final double prosWidth =
+              (targetRowHeight * prosAspectSum) + totalSpacing;
+          if (prosWidth > maxWidth && currentRow.isNotEmpty) {
+            rowsData.add(currentRow);
+            currentRow = <ExplorePost>[];
+            aspectSum = 0.0;
+          }
+          currentRow.add(post);
+          aspectSum += aspect;
+        }
+        if (currentRow.isNotEmpty) {
+          rowsData.add(currentRow);
+        }
+
+        // Auto-load more until last row has 4 items
+        if (rowsData.isNotEmpty &&
+            rowsData.last.length < 4 &&
+            !_isLoadingMore) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _loadMore();
+            }
+          });
+        }
+
+        // Render justified rows
+        final List<Widget> rows = <Widget>[];
+        for (int r = 0; r < rowsData.length; r++) {
+          final List<ExplorePost> row = rowsData[r];
+          if (row.isEmpty) continue;
+          final int n = row.length;
+          final double totalSpacing = spacing * (n - 1);
+          double rowAspectSum = 0.0;
+          for (final ExplorePost p in row) {
+            rowAspectSum +=
+                (p.width > 0 && p.height > 0) ? (p.width / p.height) : 1.0;
+          }
+          final double rowHeight = (maxWidth - totalSpacing) / rowAspectSum;
+          final List<Widget> tiles = <Widget>[];
+          for (final ExplorePost post in row) {
+            final double aspect = (post.width > 0 && post.height > 0)
+                ? (post.width / post.height)
+                : 1.0;
+            final double tileWidth = rowHeight * aspect;
+            tiles.add(
+              SizedBox(
+                width: tileWidth,
+                height: rowHeight,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PostScreen(postId: post.id),
+                      ),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        image: DecorationImage(
+                          image: AssetImage(post.imageUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
             );
-          },
+          }
+          rows.add(
+            Padding(
+              padding: EdgeInsets.only(
+                  bottom: r == rowsData.length - 1 ? 0 : spacing),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: List<Widget>.generate(tiles.length * 2 - 1, (int i) {
+                  if (i.isOdd) return const SizedBox(width: spacing);
+                  return tiles[i ~/ 2];
+                }),
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: rows,
         );
       },
     );
@@ -414,6 +733,13 @@ class _PostScreenState extends State<PostScreen> {
               assetPath: 'assets/images/post/favorite.png',
               size: 24,
               onTap: () {
+                final AuthState auth = AuthScope.of(context);
+                if (!auth.isLoggedIn) {
+                  setState(() {
+                    _showSignInPopup = true;
+                  });
+                  return;
+                }
                 setState(() {
                   _liked = !_liked;
                   _likeCount += _liked ? 1 : -1;
@@ -440,7 +766,15 @@ class _PostScreenState extends State<PostScreen> {
             _assetIconButton(
               assetPath: 'assets/images/post/Share.png',
               size: 24,
-              onTap: () {},
+              onTap: () {
+                final AuthState auth = AuthScope.of(context);
+                if (!auth.isLoggedIn) {
+                  setState(() {
+                    _showSignInPopup = true;
+                  });
+                  return;
+                }
+              },
               tooltip: 'Share',
             ),
             const SizedBox(width: 12),
@@ -448,6 +782,13 @@ class _PostScreenState extends State<PostScreen> {
               assetPath: 'assets/images/post/bookmark.png',
               size: 24,
               onTap: () {
+                final AuthState auth = AuthScope.of(context);
+                if (!auth.isLoggedIn) {
+                  setState(() {
+                    _showSignInPopup = true;
+                  });
+                  return;
+                }
                 setState(() {
                   _bookmarked = !_bookmarked;
                 });
@@ -459,6 +800,13 @@ class _PostScreenState extends State<PostScreen> {
               assetPath: 'assets/images/post/Wardrobe.png',
               size: 24,
               onTap: () {
+                final AuthState auth = AuthScope.of(context);
+                if (!auth.isLoggedIn) {
+                  setState(() {
+                    _showSignInPopup = true;
+                  });
+                  return;
+                }
                 setState(() {
                   _inWardrobe = !_inWardrobe;
                 });

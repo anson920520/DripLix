@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_receiver.dart';
+import '../services/auth_state.dart';
 import '../config/debug_flags.dart';
 
 class SignUpPopup extends StatefulWidget {
@@ -109,6 +110,9 @@ class _SignUpPopupState extends State<SignUpPopup> {
         agreeMarketing: _agreeMarketing,
       )
           .then((payload) {
+        // Mark app as logged in upon successful sign-up
+        final AuthState auth = AuthScope.of(context);
+        auth.setLoggedIn(true);
         // TEST-ONLY: show submitted payload in a dialog for verification.
         // To remove later, delete this block or set DebugFlags.showAuthTestDialogs = false.
         if (DebugFlags.showAuthTestDialogs) {
