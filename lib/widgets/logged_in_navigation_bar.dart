@@ -237,7 +237,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
         _centerButton(
           index: 3,
           asset: 'assets/images/navigation/shop_icon.png',
-          tooltip: 'Shop',
+          tooltip: 'Marketplace',
         ),
       ],
     );
@@ -274,6 +274,15 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/wardrobe') {
             Navigator.of(context).pushReplacementNamed('/wardrobe');
+          }
+          setState(() {
+            _activeCenterIndex = index;
+          });
+        } else if (index == 3) {
+          // Marketplace
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/marketplace') {
+            Navigator.of(context).pushReplacementNamed('/marketplace');
           }
           setState(() {
             _activeCenterIndex = index;

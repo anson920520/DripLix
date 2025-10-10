@@ -7,6 +7,7 @@ import 'screens/about_screen.dart';
 import 'screens/business_screen.dart';
 import 'services/auth_state.dart';
 import 'screens/wardrobe_screen.dart';
+import 'screens/marketplace_screen.dart';
 
 void main() {
   runApp(const DripLixApp());
@@ -51,6 +52,7 @@ class DripLixApp extends StatelessWidget {
           '/': (context) => const HomeScreen(),
           '/explore': (context) => const ExploreScreen(),
           '/wardrobe': (context) => const WardrobeScreen(),
+          '/marketplace': (context) => const MarketplaceScreen(),
           '/terms': (context) => const TermsScreen(),
           '/privacy': (context) => const PrivacyScreen(),
           '/about': (context) => const AboutScreen(),

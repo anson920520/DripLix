@@ -1,0 +1,12 @@
+# Placeholder for app_logo_small.png
+
+This file serves as a placeholder. Replace this with your actual logo image.
+
+Recommended specifications:
+- File name: app_logo_small.png
+- Size: 64x64 pixels
+- Format: PNG with transparency
+- Style: Black and white theme
+- Background: Transparent or white
+
+The app will fallback to a default icon if this image is not found.
