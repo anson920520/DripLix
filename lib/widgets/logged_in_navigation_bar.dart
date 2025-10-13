@@ -324,12 +324,17 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
             tooltip: 'Notifications'),
         const SizedBox(width: 8),
         _iconButton('assets/images/navigation/Generic avatar (1).png',
-            size: 32, tooltip: 'Profile'),
+            size: 32, tooltip: 'Profile', onTap: () {
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/profile') {
+            Navigator.of(context).pushReplacementNamed('/profile');
+          }
+        }),
       ],
     );
   }
 
-  Widget _iconButton(String asset, {double size = 28, String? tooltip}) {
+  Widget _iconButton(String asset, {double size = 28, String? tooltip, VoidCallback? onTap}) {
     final Widget image = Image.asset(
       asset,
       width: size,
@@ -340,7 +345,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
       },
     );
     final Widget button = InkWell(
-      onTap: () {},
+      onTap: onTap ?? () {},
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.all(6.0),
