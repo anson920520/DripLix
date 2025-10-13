@@ -1,0 +1,60 @@
+# Android
+/android/
+
+# iOS
+/ios/
+**/ios/
+
+# Web
+/web/
+
+# Build directories
+/build/
+/**/build/
+
+# Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+**/Flutter.podspec
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
