@@ -40,7 +40,7 @@ class _WardrobeCardState extends State<_WardrobeCard> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -75,7 +75,7 @@ class _WardrobeCardState extends State<_WardrobeCard> {
                       ),
                       if (_hovered)
                         Container(
-                          color: Colors.black.withOpacity(0.18),
+                          color: Colors.black.withValues(alpha: 0.18),
                           child: const Align(
                             alignment: Alignment.center,
                             child: Icon(Icons.edit, color: Colors.white),
@@ -140,9 +140,9 @@ class WardrobeScreen extends StatefulWidget {
 class _WardrobeScreenState extends State<WardrobeScreen> {
   // Top tabs on the left panel
   static const List<String> _modes = <String>[
-    "My Wardrobe",
+    'My Wardrobe',
     "Friends' Wardrobe",
-    "My Wishlist",
+    'My Wishlist',
     "Friends' Wishlist",
   ];
   int _activeModeIndex = 0;
@@ -217,7 +217,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
       body: Column(
         children: [
           isLoggedIn
-              ? LoggedInNavigationBar(initialActiveIndex: 1)
+              ? const LoggedInNavigationBar(initialActiveIndex: 1)
               : CustomNavigationBar(
                   isListUnfolded: false,
                   onListToggle: () {},
@@ -256,7 +256,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -501,7 +501,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -570,7 +570,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Align(
+                        const Align(
                           alignment: Alignment.centerRight,
                           child: SizedBox.shrink(),
                         ),
@@ -584,7 +584,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withValues(alpha: 0.2),
                                     blurRadius: 16,
                                     spreadRadius: 1,
                                     offset: const Offset(0, 6),
@@ -643,7 +643,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Center(
@@ -662,7 +662,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   Widget _buildCategoryRow(List<_WardrobeItem> items, String category) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double rowHeight = 220;
+        const double rowHeight = 220;
         final ScrollController controller = _controllerFor(category);
         return Stack(
           children: [
@@ -921,7 +921,7 @@ class _CarouselArrow extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
