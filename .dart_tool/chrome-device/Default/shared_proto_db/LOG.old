@@ -1,25 +1,30 @@
-2025/10/09-20:20:21.131 213eaa6 Reusing MANIFEST /private/var/folders/c9/7n_vckjn355c9ytckxcyp1500000gn/T/flutter_tools.9Pl0Ww/flutter_tools_chrome_device.iX9g0G/Default/shared_proto_db/MANIFEST-000001
-2025/10/09-20:20:21.131 213eaa6 Recovering log #36
-2025/10/09-20:20:21.132 213eaa6 Reusing old log /private/var/folders/c9/7n_vckjn355c9ytckxcyp1500000gn/T/flutter_tools.9Pl0Ww/flutter_tools_chrome_device.iX9g0G/Default/shared_proto_db/000036.log 
-2025/10/09-20:20:21.132 213eaa6 Delete type=0 #13
-2025/10/09-20:20:21.132 213eaa6 Delete type=0 #7
-2025/10/09-20:20:21.132 213eaa6 Delete type=0 #4
-2025/10/09-20:20:21.132 213eaa6 Delete type=0 #10
-2025/10/09-20:20:21.132 213eaa6 Delete type=0 #29
-2025/10/09-20:20:21.132 213eaa6 Delete type=0 #16
-2025/10/09-20:20:21.132 213eaa6 Delete type=0 #3
-2025/10/09-20:20:21.132 213eaa6 Delete type=2 #14
-2025/10/09-20:20:21.133 213eaa6 Delete type=2 #17
-2025/10/09-20:20:21.133 213eaa6 Delete type=2 #11
-2025/10/09-20:20:21.133 213eaa6 Delete type=2 #8
-2025/10/09-20:20:21.133 213eaa6 Delete type=2 #21
-2025/10/09-20:20:21.133 213eaa6 Delete type=2 #27
-2025/10/09-20:20:21.133 213eaa6 Delete type=2 #24
-2025/10/09-20:20:21.133 213eaa6 Delete type=2 #30
-2025/10/09-20:20:21.133 213eaa6 Delete type=0 #32
-2025/10/09-20:20:21.133 213eaa6 Delete type=0 #26
-2025/10/09-20:20:21.133 213eaa6 Delete type=0 #19
-2025/10/09-20:20:21.133 213eaa6 Delete type=0 #23
-2025/10/09-20:20:32.180 213eaa8 Level-0 table #40: started
-2025/10/09-20:20:32.183 213eaa8 Level-0 table #40: 128792 bytes OK
-2025/10/09-20:20:32.185 213eaa8 Delete type=0 #36
+2025/10/17-03:05:49.132 26f493b Reusing MANIFEST /private/var/folders/c9/7n_vckjn355c9ytckxcyp1500000gn/T/flutter_tools.GuFJli/flutter_tools_chrome_device.HkbHur/Default/shared_proto_db/MANIFEST-000001
+2025/10/17-03:05:49.132 26f493b Recovering log #45
+2025/10/17-03:05:49.132 26f493b Reusing old log /private/var/folders/c9/7n_vckjn355c9ytckxcyp1500000gn/T/flutter_tools.GuFJli/flutter_tools_chrome_device.HkbHur/Default/shared_proto_db/000045.log 
+2025/10/17-03:05:49.133 26f493b Delete type=0 #13
+2025/10/17-03:05:49.133 26f493b Delete type=0 #7
+2025/10/17-03:05:49.133 26f493b Delete type=0 #4
+2025/10/17-03:05:49.133 26f493b Delete type=0 #10
+2025/10/17-03:05:49.133 26f493b Delete type=0 #39
+2025/10/17-03:05:49.133 26f493b Delete type=2 #48
+2025/10/17-03:05:49.133 26f493b Delete type=0 #29
+2025/10/17-03:05:49.133 26f493b Delete type=0 #16
+2025/10/17-03:05:49.133 26f493b Delete type=0 #3
+2025/10/17-03:05:49.133 26f493b Delete type=2 #14
+2025/10/17-03:05:49.133 26f493b Delete type=2 #17
+2025/10/17-03:05:49.133 26f493b Delete type=2 #11
+2025/10/17-03:05:49.133 26f493b Delete type=2 #8
+2025/10/17-03:05:49.133 26f493b Delete type=2 #21
+2025/10/17-03:05:49.133 26f493b Delete type=0 #42
+2025/10/17-03:05:49.133 26f493b Delete type=2 #27
+2025/10/17-03:05:49.133 26f493b Delete type=2 #24
+2025/10/17-03:05:49.133 26f493b Delete type=2 #30
+2025/10/17-03:05:49.133 26f493b Delete type=0 #32
+2025/10/17-03:05:49.133 26f493b Delete type=0 #26
+2025/10/17-03:05:49.133 26f493b Delete type=0 #19
+2025/10/17-03:05:49.133 26f493b Delete type=0 #23
+2025/10/17-03:05:49.133 26f493b Delete type=0 #36
+2025/10/17-03:05:49.133 26f493b Delete type=2 #47
+2025/10/17-03:05:49.135 26f492d Compacting 4@0 + 1@1 files
+2025/10/17-03:05:49.138 26f492d compacted to: files[ 4 1 1 0 0 0 0 ]
+2025/10/17-03:05:49.138 26f492d Compaction error: Corruption: not an sstable (footer too short)

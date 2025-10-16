@@ -6,6 +6,11 @@ import '../widgets/logged_in_navigation_bar.dart';
 import '../widgets/navigation_bar.dart';
 import '../widgets/edit_item_popup.dart';
 import '../widgets/item_preview_popup.dart';
+import '../widgets/view_item_popup.dart';
+import '../widgets/wishlist_item_popup.dart';
+
+const double kWardrobeCardTextSectionHeight =
+    41.0; // divider + paddings + title + spacer + brand
 
 class _WardrobeCard extends StatefulWidget {
   final _WardrobeItem item;
@@ -56,14 +61,14 @@ class _WardrobeCardState extends State<_WardrobeCard> {
                   topRight: Radius.circular(12),
                 ),
                 child: SizedBox(
-                  height: rowHeight - 70,
+                  height: rowHeight - kWardrobeCardTextSectionHeight,
                   width: double.infinity,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       Image.asset(
                         widget.item.imageUrl,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey[200],
@@ -89,7 +94,7 @@ class _WardrobeCardState extends State<_WardrobeCard> {
               Container(height: 1, color: Colors.black12),
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -532,36 +537,37 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                   ),
                 ),
               ),
-              // Hanger logo line
-              SizedBox(
-                height: 56,
-                child: Center(
-                  child: Container(
-                    width: 640,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.black26, width: 1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    alignment: Alignment.center,
-                    child: InkWell(
-                      onTap: _openAddNewItemPopup,
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          'assets/images/wardrobe/iconstack.io - (Hanger).png',
-                          width: 28,
-                          height: 28,
-                          errorBuilder: (c, e, s) =>
-                              const SizedBox(width: 28, height: 28),
+              // Hanger logo bar (independent white bar with centered logo)
+              if (_activeModeIndex == 0)
+                SizedBox(
+                  height: 56,
+                  child: Center(
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.black26, width: 1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      alignment: Alignment.center,
+                      child: InkWell(
+                        onTap: _openAddNewItemPopup,
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(
+                            'assets/images/wardrobe/iconstack.io - (Hanger).png',
+                            width: 28,
+                            height: 28,
+                            errorBuilder: (c, e, s) =>
+                                const SizedBox(width: 28, height: 28),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
               // Body scroll
               Expanded(
                 child: SingleChildScrollView(
@@ -676,18 +682,52 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                 final double aspect = (item.width > 0 && item.height > 0)
                     ? item.width / item.height
                     : 1.0;
-                final double cardWidth = (rowHeight - 20) * aspect;
+                final double imageHeight =
+                    rowHeight - kWardrobeCardTextSectionHeight;
+                final double cardWidth = imageHeight * aspect;
                 return SizedBox(
                   width: cardWidth.clamp(160, 360),
                   child: _WardrobeCard(
                     item: item,
                     height: rowHeight,
                     onEdit: () {
-                      _openEditPopup(
-                        imageUrl: item.imageUrl,
-                        title: item.title,
-                        brand: item.brand,
-                      );
+                      if (_isFriendWishlist) {
+                        _openWishlistPopup(
+                          imageUrl: item.imageUrl,
+                          title: item.title,
+                          brand: item.brand,
+                          imageWidth: item.width,
+                          imageHeight: item.height,
+                          showDelete: false,
+                          showMove: false,
+                        );
+                      } else if (_isMyWishlist) {
+                        _openWishlistPopup(
+                          imageUrl: item.imageUrl,
+                          title: item.title,
+                          brand: item.brand,
+                          imageWidth: item.width,
+                          imageHeight: item.height,
+                          showDelete: true,
+                          showMove: true,
+                        );
+                      } else if (_activeModeIndex == 1) {
+                        _openViewPopup(
+                          imageUrl: item.imageUrl,
+                          title: item.title,
+                          brand: item.brand,
+                          imageWidth: item.width,
+                          imageHeight: item.height,
+                        );
+                      } else {
+                        _openEditPopup(
+                          imageUrl: item.imageUrl,
+                          title: item.title,
+                          brand: item.brand,
+                          imageWidth: item.width,
+                          imageHeight: item.height,
+                        );
+                      }
                     },
                   ),
                 );
@@ -729,35 +769,199 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
     setState(() => _isLoading = false);
   }
 
-  void _openEditPopup({
+  bool get _isMyWishlist => _activeModeIndex == 2;
+  bool get _isFriendWishlist => _activeModeIndex == 3;
+
+  void _openViewPopup({
     required String imageUrl,
     required String title,
     required String brand,
+    int? imageWidth,
+    int? imageHeight,
   }) {
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (ctx) {
+        const double maxPreviewHeight = 820;
+        const double maxPreviewWidth = 520;
+        double previewWidth = maxPreviewWidth;
+        double previewHeight = maxPreviewHeight;
+        if ((imageWidth ?? 0) > 0 && (imageHeight ?? 0) > 0) {
+          final double aspect = (imageWidth! / imageHeight!);
+          previewWidth = maxPreviewWidth;
+          previewHeight = previewWidth / aspect;
+          if (previewHeight > maxPreviewHeight) {
+            previewHeight = maxPreviewHeight;
+            previewWidth = previewHeight * aspect;
+          }
+        }
         return Center(
           child: Material(
             color: Colors.transparent,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Preview window
+                // Left: view-only details
+                ViewItemPopup(
+                  width: 520,
+                  height: 820,
+                  title: title,
+                  brand: brand,
+                  onReturn: () => Navigator.of(ctx).pop(),
+                  onTryOn: () {
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Try On not implemented')),
+                    );
+                  },
+                ),
+                const SizedBox(width: 16),
+                // Right: preview
                 ItemPreviewPopup(
-                  width: 600,
-                  height: 938,
+                  width: previewWidth,
+                  height: previewHeight,
                   imageUrl: imageUrl,
                   title: title,
                   brand: brand,
                   onClose: () => Navigator.of(ctx).pop(),
                 ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openWishlistPopup({
+    required String imageUrl,
+    required String title,
+    required String brand,
+    int? imageWidth,
+    int? imageHeight,
+    required bool showDelete,
+    required bool showMove,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        const double maxPreviewHeight = 820;
+        const double maxPreviewWidth = 520;
+        double previewWidth = maxPreviewWidth;
+        double previewHeight = maxPreviewHeight;
+        if ((imageWidth ?? 0) > 0 && (imageHeight ?? 0) > 0) {
+          final double aspect = (imageWidth! / imageHeight!);
+          previewWidth = maxPreviewWidth;
+          previewHeight = previewWidth / aspect;
+          if (previewHeight > maxPreviewHeight) {
+            previewHeight = maxPreviewHeight;
+            previewWidth = previewHeight * aspect;
+          }
+        }
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                WishlistItemPopup(
+                  width: 520,
+                  height: 820,
+                  title: title,
+                  brand: brand,
+                  shop: '',
+                  dateAdded: '',
+                  onReturn: () => Navigator.of(ctx).pop(),
+                  onTryOn: () {
+                    Navigator.of(ctx).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Try On not implemented')),
+                    );
+                  },
+                  onDelete: showDelete
+                      ? () {
+                          Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Item deleted from wishlist')),
+                          );
+                        }
+                      : null,
+                  onMoveToWardrobe: showMove
+                      ? () {
+                          Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Moved to Wardrobe')),
+                          );
+                        }
+                      : null,
+                ),
                 const SizedBox(width: 16),
+                ItemPreviewPopup(
+                  width: previewWidth,
+                  height: previewHeight,
+                  imageUrl: imageUrl,
+                  title: title,
+                  brand: brand,
+                  onClose: () => Navigator.of(ctx).pop(),
+                  showWishlistActions: true,
+                  onFitting: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Fitting not implemented')),
+                    );
+                  },
+                  onGetDrip: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Get Drip not implemented')),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openEditPopup({
+    required String imageUrl,
+    required String title,
+    required String brand,
+    int? imageWidth,
+    int? imageHeight,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        // Compute dynamic preview size based on image aspect ratio, within a max box
+        const double maxPreviewHeight = 820;
+        const double maxPreviewWidth = 520;
+        double previewWidth = maxPreviewWidth;
+        double previewHeight = maxPreviewHeight;
+        if ((imageWidth ?? 0) > 0 && (imageHeight ?? 0) > 0) {
+          final double aspect = (imageWidth! / imageHeight!);
+          // Fit within max box, preserving aspect
+          previewWidth = maxPreviewWidth;
+          previewHeight = previewWidth / aspect;
+          if (previewHeight > maxPreviewHeight) {
+            previewHeight = maxPreviewHeight;
+            previewWidth = previewHeight * aspect;
+          }
+        }
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 // Editor window (form-only)
                 EditItemPopup(
-                  width: 600,
-                  height: 938,
+                  width: 520,
+                  height: 820,
                   initialTitle: title,
                   initialBrand: brand,
                   onSave: (edited) {
@@ -776,6 +980,16 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                     Navigator.of(ctx).pop();
                   },
                 ),
+                const SizedBox(width: 16),
+                // Preview window
+                ItemPreviewPopup(
+                  width: previewWidth,
+                  height: previewHeight,
+                  imageUrl: imageUrl,
+                  title: title,
+                  brand: brand,
+                  onClose: () => Navigator.of(ctx).pop(),
+                ),
               ],
             ),
           ),
@@ -792,6 +1006,9 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
         String currentTitle = '';
         String currentBrand = '';
         String currentImageUrl = '';
+        // Use default preview size box; if image is uploaded later, it will fill contain
+        const double previewWidth = 632;
+        const double previewHeight = 632;
         return StatefulBuilder(
           builder: (context, setStateSB) {
             return Center(
@@ -800,24 +1017,9 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ItemPreviewPopup(
-                      width: 600,
-                      height: 938,
-                      imageUrl: currentImageUrl,
-                      title: currentTitle,
-                      brand: currentBrand,
-                      onClose: () => Navigator.of(ctx).pop(),
-                      onUploadRequested: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Upload image not implemented')),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 16),
                     EditItemPopup(
-                      width: 600,
-                      height: 938,
+                      width: 480,
+                      height: 720,
                       initialTitle: currentTitle,
                       initialBrand: currentBrand,
                       onTitleChanged: (v) => setStateSB(() => currentTitle = v),
@@ -828,11 +1030,23 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
                           const SnackBar(content: Text('Item created')),
                         );
                       },
-                      onDelete: () {
-                        Navigator.of(ctx).pop();
-                      },
                       onReturn: () {
                         Navigator.of(ctx).pop();
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    ItemPreviewPopup(
+                      width: previewWidth,
+                      height: previewHeight,
+                      imageUrl: currentImageUrl,
+                      title: currentTitle,
+                      brand: currentBrand,
+                      onClose: () => Navigator.of(ctx).pop(),
+                      onUploadRequested: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Upload image not implemented')),
+                        );
                       },
                     ),
                   ],
@@ -857,13 +1071,17 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
   }
 
   Map<String, List<_WardrobeItem>> _generateMock() {
+    const List<String> demoImages = <String>[
+      'assets/images/wardrobe/image 11.png',
+      'assets/images/wardrobe/image 12.png',
+      'assets/images/wardrobe/image 13 (1).png',
+    ];
     final List<_WardrobeItem> base = List<_WardrobeItem>.generate(18, (int i) {
-      final bool even = i % 2 == 0;
-      final String img = even
-          ? 'assets/images/homepage/carousel_template_image_1.png'
-          : 'assets/images/homepage/carousel_template_image_2.png';
-      final int w = even ? 1200 : 900;
-      final int h = even ? 900 : 1200;
+      final String img = demoImages[i % demoImages.length];
+      // Alternate aspect to simulate portrait/landscape variety
+      final bool landscape = i % 3 != 1;
+      final int w = landscape ? 1200 : 900;
+      final int h = landscape ? 900 : 1200;
       return _WardrobeItem(
         title: 'Item ${i + 1}',
         brand: 'Brand ${String.fromCharCode(65 + (i % 5))}',
@@ -898,48 +1116,6 @@ class _WardrobeItem {
     required this.width,
     required this.height,
   });
-}
-
-class _CarouselArrow extends StatelessWidget {
-  final AxisDirection direction;
-  final VoidCallback onPressed;
-
-  const _CarouselArrow({
-    required this.direction,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isLeft = direction == AxisDirection.left;
-    return Container(
-      width: 36,
-      height: 36,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: Colors.black12),
-      ),
-      child: IconButton(
-        onPressed: onPressed,
-        iconSize: 18,
-        splashRadius: 18,
-        icon: Icon(
-          isLeft ? Icons.chevron_left : Icons.chevron_right,
-          color: Colors.black87,
-        ),
-        tooltip: isLeft ? 'Previous' : 'Next',
-      ),
-    );
-  }
 }
 
 class _SmallSideArrow extends StatelessWidget {
