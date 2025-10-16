@@ -1,0 +1,92 @@
+{
+    "posts": [
+      {
+        "id": "p_1",
+        "imageUrl": "assets/images/mockimage/1503313ff7961b9feb0520a114042a63.jpg",
+        "width": 1400,
+        "height": 900,
+        "title": "Golden Hour Street Fit",
+        "userName": "alex.h",
+        "createdAt": "2025-10-01T10:00:00Z",
+        "likes": 123,
+        "bookmarks": 15
+      },
+      {
+        "id": "p_2",
+        "imageUrl": "assets/images/mockimage/9049fd26530bd43d87eaba5ecf94fbeb.jpg",
+        "width": 1000,
+        "height": 1200,
+        "title": "Monochrome Layers",
+        "userName": "jamie",
+        "createdAt": "2025-10-02T12:00:00Z",
+        "likes": 256,
+        "bookmarks": 48
+      },
+      {
+        "id": "p_3",
+        "imageUrl": "assets/images/mockimage/9b3fd857f14482d30de234ccd9924642.jpg",
+        "width": 1100,
+        "height": 900,
+        "title": "Denim On Denim",
+        "userName": "emma",
+        "createdAt": "2025-10-03T08:30:00Z",
+        "likes": 342,
+        "bookmarks": 73
+      },
+      {
+        "id": "p_4",
+        "imageUrl": "assets/images/mockimage/e3b896eb41078e47d3426b6b54d889b4.jpg",
+        "width": 900,
+        "height": 1100,
+        "title": "Weekend Coffee Run",
+        "userName": "ruby",
+        "createdAt": "2025-10-04T14:10:00Z",
+        "likes": 401,
+        "bookmarks": 99
+      },
+      {
+        "id": "p_5",
+        "imageUrl": "assets/images/mockimage/0eb5898df0b8842ddfab18a528459f25.jpg",
+        "width": 1200,
+        "height": 800,
+        "title": "Urban Explorer",
+        "userName": "marcus_w",
+        "createdAt": "2025-10-05T09:15:00Z",
+        "likes": 178,
+        "bookmarks": 22
+      },
+      {
+        "id": "p_6",
+        "imageUrl": "assets/images/mockimage/89eab4f2fa5fc8da894cfa54a8077e4f.jpg",
+        "width": 1300,
+        "height": 950,
+        "title": "Minimalist Style",
+        "userName": "sophie_l",
+        "createdAt": "2025-10-06T11:45:00Z",
+        "likes": 289,
+        "bookmarks": 41
+      },
+      {
+        "id": "p_7",
+        "imageUrl": "assets/images/mockimage/8c3ea67a0833e04b5b52d727fa40b19f.jpg",
+        "width": 1000,
+        "height": 1300,
+        "title": "Streetwear Essentials",
+        "userName": "tyler_k",
+        "createdAt": "2025-10-07T16:20:00Z",
+        "likes": 312,
+        "bookmarks": 67
+      },
+      {
+        "id": "p_8",
+        "imageUrl": "assets/images/mockimage/ae871ce54965333cdd6a02411b1b266d.jpg",
+        "width": 1100,
+        "height": 1000,
+        "title": "Casual Friday",
+        "userName": "lily_c",
+        "createdAt": "2025-10-08T13:30:00Z",
+        "likes": 195,
+        "bookmarks": 33
+      }
+    ]
+  }
