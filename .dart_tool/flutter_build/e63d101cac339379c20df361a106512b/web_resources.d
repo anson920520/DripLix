@@ -1,1 +1,0 @@
- /Users/alexhin0719/Downloads/DripLix/build/web/manifest.json:  /Users/alexhin0719/Downloads/DripLix/web/index.html /Users/alexhin0719/Downloads/DripLix/web/manifest.json
