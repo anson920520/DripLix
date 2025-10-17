@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Simple models for Explore content. These can be expanded later by the backend dev.
 class OotdItem {
@@ -20,12 +22,16 @@ class ExplorePost {
   final String imageUrl; // Can be a network URL or an asset path
   final int width;
   final int height;
+  final String title;
+  final String userName;
 
   const ExplorePost({
     required this.id,
     required this.imageUrl,
     required this.width,
     required this.height,
+    required this.title,
+    required this.userName,
   });
 }
 
@@ -59,114 +65,81 @@ abstract class ExploreRepository {
 class MockExploreRepository implements ExploreRepository {
   const MockExploreRepository();
 
+  static List<ExplorePost>? _cachedPosts;
+
+  Future<List<ExplorePost>> _loadMockPosts() async {
+    if (_cachedPosts != null) return _cachedPosts!;
+    final String jsonString =
+        await rootBundle.loadString('assets/getAllMockPost.json');
+    final Map<String, dynamic> data = json.decode(jsonString);
+    // Support two shapes: {posts: [...]} or legacy {data:{products:[...]}}
+    List<dynamic>? raw = data['posts'] as List<dynamic>?;
+    raw ??= (data['data'] != null && data['data']['products'] is List)
+        ? (data['data']['products'] as List<dynamic>)
+        : <dynamic>[];
+    _cachedPosts = raw.map((dynamic it) {
+      final Map<String, dynamic> m = it as Map<String, dynamic>;
+      // Normalize keys
+      final String image = (m['imageUrl'] ?? m['image_url']) as String;
+      final int w = (m['width'] as num?)?.toInt() ?? 1000;
+      final int h = (m['height'] as num?)?.toInt() ?? 1000;
+      return ExplorePost(
+        id: (m['id'] as String?) ?? (m['postId'] as String? ?? 'post_${raw!.indexOf(it)}'),
+        imageUrl: image,
+        width: w,
+        height: h,
+        title: (m['title'] as String?) ?? (m['postName'] as String? ?? ''),
+        userName: (m['userName'] as String?) ?? (m['user'] as String? ?? 'user'),
+      );
+    }).toList();
+    return _cachedPosts!;
+  }
+
   @override
   Future<List<OotdItem>> fetchOotd({int page = 1, int pageSize = 12}) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    // Prefer wider presets for OOTD
-    final List<List<int>> sizePresets = <List<int>>[
-      <int>[1400, 900], // very wide
-      <int>[1300, 900], // wide
-      <int>[1200, 900], // wide
-      <int>[1100, 900], // slightly wide
-      <int>[1000, 900], // slightly wide
-      <int>[900, 900], // square
-      <int>[1000, 1000], // square
-      <int>[1600, 900], // extra wide
-      <int>[1500, 900], // extra wide
-    ];
-    return List<OotdItem>.generate(pageSize, (int index) {
-      final bool even = (index + page) % 2 == 0;
-      final String asset = even
-          ? 'assets/images/homepage/carousel_template_image_1.png'
-          : 'assets/images/homepage/carousel_template_image_2.png';
-      final List<int> s = sizePresets[(index + page) % sizePresets.length];
-      return OotdItem(
-        id: 'ootd_${page}_$index',
-        imageUrl: asset,
-        width: s[0],
-        height: s[1],
-      );
-    });
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    final List<ExplorePost> posts = await _loadMockPosts();
+    final List<ExplorePost> slice = _slice(posts, page, pageSize);
+    return slice
+        .map((p) => OotdItem(id: p.id, imageUrl: p.imageUrl, width: p.width, height: p.height))
+        .toList();
   }
 
   @override
   Future<List<ExplorePost>> fetchFeed({int page = 1, int pageSize = 30}) async {
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    // Emit varied intrinsic sizes to drive layout decisions
-    final List<List<int>> sizePresets = <List<int>>[
-      <int>[800, 1200], // tall
-      <int>[1200, 800], // wide
-      <int>[1000, 1000], // square
-      <int>[1400, 900], // very wide
-      <int>[900, 1400], // very tall
-      <int>[1100, 900], // slightly wide
-      <int>[900, 1100], // slightly tall
-    ];
-    return List<ExplorePost>.generate(pageSize, (int index) {
-      final bool even = (index + page) % 2 == 0;
-      final String asset = even
-          ? 'assets/images/homepage/carousel_template_image_1.png'
-          : 'assets/images/homepage/carousel_template_image_2.png';
-      final List<int> s = sizePresets[(index + page) % sizePresets.length];
-      return ExplorePost(
-        id: 'post_${page}_$index',
-        imageUrl: asset,
-        width: s[0],
-        height: s[1],
-      );
-    });
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    final List<ExplorePost> posts = await _loadMockPosts();
+    return _slice(posts, page, pageSize);
   }
 
   @override
   Future<List<ExplorePost>> fetchFollowing(
       {int page = 1, int pageSize = 30}) async {
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    // Mock: Use same assets but different id prefix to distinguish
-    final List<List<int>> sizePresets = <List<int>>[
-      <int>[900, 1400],
-      <int>[1200, 800],
-      <int>[1000, 1000],
-      <int>[1400, 900],
-      <int>[800, 1200],
-      <int>[1100, 900],
-      <int>[900, 1100],
-    ];
-    return List<ExplorePost>.generate(pageSize, (int index) {
-      final bool even = (index + page) % 2 == 0;
-      final String asset = even
-          ? 'assets/images/homepage/carousel_template_image_2.png'
-          : 'assets/images/homepage/carousel_template_image_1.png';
-      final List<int> s = sizePresets[(index + page) % sizePresets.length];
-      return ExplorePost(
-        id: 'following_${page}_$index',
-        imageUrl: asset,
-        width: s[0],
-        height: s[1],
-      );
-    });
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+    final List<ExplorePost> posts = await _loadMockPosts();
+    return _slice(posts, page, pageSize);
   }
 
   @override
   Future<PostDetail> fetchPost(String postId) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
-    // Return mock data based on id; in real impl, call API
-    final bool even = postId.hashCode % 2 == 0;
-    final List<String> images = even
-        ? <String>[
-            'assets/images/homepage/carousel_template_image_1.png',
-            'assets/images/homepage/carousel_template_image_2.png',
-          ]
-        : <String>[
-            'assets/images/homepage/carousel_template_image_2.png',
-            'assets/images/homepage/carousel_template_image_1.png',
-          ];
+    final List<ExplorePost> posts = await _loadMockPosts();
+    final ExplorePost p = posts.firstWhere((e) => e.id == postId,
+        orElse: () => posts.first);
     return PostDetail(
-      id: postId,
-      imageUrls: images,
-      userName: 'User $postId',
+      id: p.id,
+      imageUrls: <String>[p.imageUrl],
+      userName: p.userName,
       userAvatarUrl: 'assets/images/post/Generic avatar.png',
-      title: 'Title for $postId',
-      text: 'This is mock post content for $postId. Replace with backend data.',
+      title: p.title,
+      text: 'Mock content for ${p.title} by ${p.userName}. Replace with API.',
     );
+  }
+
+  List<T> _slice<T>(List<T> items, int page, int pageSize) {
+    final int start = (page - 1) * pageSize;
+    if (start >= items.length) return <T>[];
+    final int end = (start + pageSize).clamp(0, items.length);
+    return items.sublist(start, end);
   }
 }
