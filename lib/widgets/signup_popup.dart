@@ -186,7 +186,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
 
     if (hasErrors) {
       // Calculate required height when errors are present
-      final baseHeight = 647.0;
+      const baseHeight = 647.0;
       final errorCount = _fieldErrors.length;
       final errorSpace = errorCount * 20.0; // 20px per error message
       final buffer = 40.0; // Extra buffer
@@ -211,7 +211,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -361,7 +361,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                       style: GoogleFonts.notoSerif(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF666666),
+                        color: const Color(0xFF666666),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -377,7 +377,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                           style: GoogleFonts.notoSerif(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF333333),
+                            color: const Color(0xFF333333),
                             height: 1.2,
                           ),
                           decoration: const InputDecoration(
@@ -479,7 +479,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                       style: GoogleFonts.notoSerif(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF666666),
+                        color: const Color(0xFF666666),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -494,7 +494,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                           style: GoogleFonts.notoSerif(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF333333),
+                            color: const Color(0xFF333333),
                             height: 1.2,
                           ),
                           decoration: const InputDecoration(
@@ -601,7 +601,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                       style: GoogleFonts.notoSerif(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF666666),
+                        color: const Color(0xFF666666),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -617,7 +617,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                           style: GoogleFonts.notoSerif(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: Color(0xFF333333),
+                            color: const Color(0xFF333333),
                             height: 1.2,
                           ),
                           decoration: const InputDecoration(
@@ -735,7 +735,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
                       TextSpan(
                         text: 'Terms & Conditions',
                         style: GoogleFonts.notoSerif(
-                          color: Color(0xFF3A12D8),
+                          color: const Color(0xFF3A12D8),
                           decoration: TextDecoration.underline,
                         ),
                         recognizer: TapGestureRecognizer()
@@ -819,7 +819,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -904,7 +904,7 @@ class _SignUpPopupState extends State<SignUpPopup> {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
