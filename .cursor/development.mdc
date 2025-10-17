@@ -14,9 +14,11 @@ Repository objects instantiated should be located in the MultiProvider at the to
 
 See https://docs.flutter.dev/app-architecture/guide for more details on the MVVM architecture.
 
-Never refresh the data by other then ChangeNotifier & Consumer method, especially by the state of Widget!
+Never refresh the data by other then Riverpod method, especially by the state of Widget!
 
-Use Riverpod in the new project. Don’t modify the state management methodology on existing projects.
+Use Riverpod in this project.
+
+If necessary, add a Domain layer in this MVVM structure.
 
 Never use print() function which is deprecated, use debugPrint() or log() instead.
 
