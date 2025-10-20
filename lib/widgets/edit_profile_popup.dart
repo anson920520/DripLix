@@ -49,7 +49,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -183,7 +183,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label + ':', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        Text('$label:', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         Container(
           height: 40,
@@ -405,7 +405,7 @@ class _ProfilePictureEditorState extends State<_ProfilePictureEditor> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

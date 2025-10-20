@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/logged_in_navigation_bar.dart';
@@ -7,14 +8,14 @@ import '../widgets/social_links_panel.dart';
 import '../widgets/edit_profile_popup.dart';
 import '../services/auth_state.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // Mock user data
   String userCustomName = '{user_custom_name}';
   String userName = 'user_name';
@@ -35,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    final bool isLoggedIn = ref.watch(authProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(

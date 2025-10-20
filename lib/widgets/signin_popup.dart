@@ -1,12 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_receiver.dart';
 import '../services/auth_state.dart';
 import '../config/debug_flags.dart';
 
-class SignInPopup extends StatefulWidget {
+class SignInPopup extends ConsumerStatefulWidget {
   final VoidCallback? onClose;
   final VoidCallback? onSignUp;
 
@@ -17,10 +18,10 @@ class SignInPopup extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<SignInPopup> createState() => _SignInPopupState();
+  ConsumerState<SignInPopup> createState() => _SignInPopupState();
 }
 
-class _SignInPopupState extends State<SignInPopup> {
+class _SignInPopupState extends ConsumerState<SignInPopup> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountTypeController = TextEditingController();
   final TextEditingController _emailOrUsernameController =
@@ -73,8 +74,7 @@ class _SignInPopupState extends State<SignInPopup> {
       )
           .then((payload) {
         // Mark app as logged in
-        final AuthState auth = AuthScope.of(context);
-        auth.setLoggedIn(true);
+        ref.read(authProvider.notifier).setLoggedIn(true);
         // TEST-ONLY: show submitted payload in a dialog for verification.
         // To remove later, delete this block or set DebugFlags.showAuthTestDialogs = false.
         if (DebugFlags.showAuthTestDialogs) {

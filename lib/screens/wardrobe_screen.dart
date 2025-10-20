@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/auth_state.dart';
@@ -130,14 +131,14 @@ class _WardrobeCardState extends State<_WardrobeCard> {
   }
 }
 
-class WardrobeScreen extends StatefulWidget {
+class WardrobeScreen extends ConsumerStatefulWidget {
   const WardrobeScreen({super.key});
 
   @override
-  State<WardrobeScreen> createState() => _WardrobeScreenState();
+  ConsumerState<WardrobeScreen> createState() => _WardrobeScreenState();
 }
 
-class _WardrobeScreenState extends State<WardrobeScreen> {
+class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   // Top tabs on the left panel
   static const List<String> _modes = <String>[
     'My Wardrobe',
@@ -203,7 +204,7 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    final bool isLoggedIn = ref.watch(authProvider);
     if (!isLoggedIn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {

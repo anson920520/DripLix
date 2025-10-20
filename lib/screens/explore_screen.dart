@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/navigation_bar.dart';
@@ -10,14 +11,14 @@ import '../services/explore_repository.dart';
 import 'post_screen.dart';
 // Edit popup is only for Wardrobe; not used here.
 
-class ExploreScreen extends StatefulWidget {
+class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
 
   @override
-  State<ExploreScreen> createState() => _ExploreScreenState();
+  ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends State<ExploreScreen> {
+class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _isListUnfolded = false;
   String? _hoveredItem;
   String? _hoveredOotdId;
@@ -46,7 +47,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   void initState() {
     super.initState();
-    // Defer first load to didChangeDependencies to be able to read AuthScope.
+    // Defer first load to didChangeDependencies to be able to read auth state.
   }
 
   @override
@@ -62,7 +63,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Future<void> _loadInitial() async {
-    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    final bool isLoggedIn = ref.watch(authProvider);
     if (isLoggedIn) {
       await Future.wait(<Future<void>>[
         _loadMoreOotd(reset: true),
@@ -159,7 +160,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    final bool isLoggedIn = ref.watch(authProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(

@@ -117,6 +117,7 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
-
+# 以上信息已由gitignore插件自动生成，严禁修改
+# 以下信息由用户自定义
 .DS_Store
 .env

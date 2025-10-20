@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/navigation_bar.dart';
@@ -21,7 +22,7 @@ class _DragScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-class PostScreen extends StatefulWidget {
+class PostScreen extends ConsumerStatefulWidget {
   final String postId;
 
   const PostScreen({
@@ -30,10 +31,10 @@ class PostScreen extends StatefulWidget {
   });
 
   @override
-  State<PostScreen> createState() => _PostScreenState();
+  ConsumerState<PostScreen> createState() => _PostScreenState();
 }
 
-class _PostScreenState extends State<PostScreen> {
+class _PostScreenState extends ConsumerState<PostScreen> {
   int _currentIndex = 0;
   final ExploreRepository _repository = const MockExploreRepository();
   final List<ExplorePost> _morePosts = <ExplorePost>[];
@@ -149,7 +150,7 @@ class _PostScreenState extends State<PostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    final bool isLoggedIn = ref.watch(authProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -733,8 +734,8 @@ class _PostScreenState extends State<PostScreen> {
               assetPath: 'assets/images/post/favorite.png',
               size: 24,
               onTap: () {
-                final AuthState auth = AuthScope.of(context);
-                if (!auth.isLoggedIn) {
+                final bool isLoggedIn = ref.read(authProvider);
+                if (!isLoggedIn) {
                   setState(() {
                     _showSignInPopup = true;
                   });
@@ -767,8 +768,8 @@ class _PostScreenState extends State<PostScreen> {
               assetPath: 'assets/images/post/Share.png',
               size: 24,
               onTap: () {
-                final AuthState auth = AuthScope.of(context);
-                if (!auth.isLoggedIn) {
+                final bool isLoggedIn = ref.read(authProvider);
+                if (!isLoggedIn) {
                   setState(() {
                     _showSignInPopup = true;
                   });
@@ -782,8 +783,8 @@ class _PostScreenState extends State<PostScreen> {
               assetPath: 'assets/images/post/bookmark.png',
               size: 24,
               onTap: () {
-                final AuthState auth = AuthScope.of(context);
-                if (!auth.isLoggedIn) {
+                final bool isLoggedIn = ref.read(authProvider);
+                if (!isLoggedIn) {
                   setState(() {
                     _showSignInPopup = true;
                   });
@@ -800,8 +801,8 @@ class _PostScreenState extends State<PostScreen> {
               assetPath: 'assets/images/post/Wardrobe.png',
               size: 24,
               onTap: () {
-                final AuthState auth = AuthScope.of(context);
-                if (!auth.isLoggedIn) {
+                final bool isLoggedIn = ref.read(authProvider);
+                if (!isLoggedIn) {
                   setState(() {
                     _showSignInPopup = true;
                   });

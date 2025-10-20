@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/auth_state.dart';
@@ -112,14 +113,14 @@ class _MarketplaceCardState extends State<_MarketplaceCard> {
   }
 }
 
-class MarketplaceScreen extends StatefulWidget {
+class MarketplaceScreen extends ConsumerStatefulWidget {
   const MarketplaceScreen({super.key});
 
   @override
-  State<MarketplaceScreen> createState() => _MarketplaceScreenState();
+  ConsumerState<MarketplaceScreen> createState() => _MarketplaceScreenState();
 }
 
-class _MarketplaceScreenState extends State<MarketplaceScreen> {
+class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
   // Filters
   final TextEditingController _searchController = TextEditingController();
   String? _selectedCategory;
@@ -205,7 +206,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    final bool isLoggedIn = ref.watch(authProvider);
     if (!isLoggedIn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
