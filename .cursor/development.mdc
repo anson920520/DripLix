@@ -27,3 +27,5 @@ When intergrates the API don't hardcode baseURL but uses var baseUrl = dotenv.en
 When adding new parametre in .env file, also add it into .env.example file with an example value. Use uppercase letters plus underscores to define .env parameters. Other characters are strictly prohibited.
 
 Make sure not to use context at any level other than the View level.
+
+A standalone Widget class may be needed if you wanna embed any widget in the other widget. Do not define a function which returns Widget.

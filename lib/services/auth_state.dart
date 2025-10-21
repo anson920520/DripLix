@@ -1,13 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AuthNotifier extends StateNotifier<bool> {
-  AuthNotifier() : super(false);
+class AuthNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return false;
+  }
   
   void setLoggedIn(bool loggedIn) {
     state = loggedIn;
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, bool>((ref) {
+final authProvider = NotifierProvider<AuthNotifier, bool>(() {
   return AuthNotifier();
 });
