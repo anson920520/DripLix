@@ -300,7 +300,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: platform,
-              items: const ['IG', 'Facebook', 'X', 'TikTok']
+              items: const ['IG', 'Facebook', 'X', 'TikTok', 'Discord', 'YouTube', 'Spotify', 'Threads', '微博', '小红书', '虎扑', 'Other']
                   .map((p) => DropdownMenuItem<String>(value: p, child: Text(p)))
                   .toList(),
               onChanged: (v) {
