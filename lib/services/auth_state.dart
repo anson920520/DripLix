@@ -1,6 +1,9 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class AuthNotifier extends Notifier<bool> {
+part 'auth_state.g.dart';
+
+@riverpod
+class Auth extends _$Auth {
   @override
   bool build() {
     return false;
@@ -10,7 +13,3 @@ class AuthNotifier extends Notifier<bool> {
     state = loggedIn;
   }
 }
-
-final authProvider = NotifierProvider<AuthNotifier, bool>(() {
-  return AuthNotifier();
-});

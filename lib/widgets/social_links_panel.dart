@@ -99,6 +99,21 @@ class SocialLinksPanel extends StatelessWidget {
       case 'threads':
         iconData = Icons.link;
         break;
+      case 'discord':
+        iconData = Icons.discord;
+        break;
+      case '微博':
+      case 'weibo':
+        iconData = Icons.public;
+        break;
+      case '小红书':
+      case 'xiaohongshu':
+        iconData = Icons.photo_camera;
+        break;
+      case '虎扑':
+      case 'hupu':
+        iconData = Icons.sports_basketball;
+        break;
       default:
         iconData = Icons.link;
     }

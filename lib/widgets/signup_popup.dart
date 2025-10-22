@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_receiver.dart';
@@ -98,7 +97,7 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
 
     // If no errors, proceed with sign up
     if (errors.isEmpty) {
-      final receiver = const AuthReceiverService();
+      const receiver = AuthReceiverService();
       receiver
           .receiveSignUp(
         username: _usernameController.text,
@@ -115,7 +114,7 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
         ref.read(authProvider.notifier).setLoggedIn(true);
         // TEST-ONLY: show submitted payload in a dialog for verification.
         // To remove later, delete this block or set DebugFlags.showAuthTestDialogs = false.
-        if (DebugFlags.showAuthTestDialogs) {
+        if (DebugFlags.showAuthTestDialogs && mounted) {
           showDialog(
             context: context,
             builder: (ctx) {
@@ -189,7 +188,7 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
       const baseHeight = 647.0;
       final errorCount = _fieldErrors.length;
       final errorSpace = errorCount * 20.0; // 20px per error message
-      final buffer = 40.0; // Extra buffer
+      const buffer = 40.0; // Extra buffer
       windowHeight = baseHeight + errorSpace + buffer;
 
       // Ensure it doesn't exceed 90% of screen height
@@ -963,7 +962,7 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
