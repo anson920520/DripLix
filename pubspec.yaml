@@ -13,6 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   google_fonts: ^6.2.1
   flutter_staggered_grid_view: ^0.7.0
+  image_picker: ^1.0.4
 
 dev_dependencies:
   flutter_test:
@@ -24,11 +25,13 @@ flutter:
   
   # Assets configuration
   assets:
+    - assets/getAllMockPost.json
     - assets/images/logos/
     - assets/images/navigation/
     - assets/images/navigation/Searchbar/
     - assets/images/icons/
     - assets/images/homepage/
+    - assets/images/mockimage/
     - assets/images/wardrobe/
     - assets/images/signup/
     - assets/images/signin/

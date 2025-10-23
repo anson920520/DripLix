@@ -29,7 +29,7 @@ class EditItemPopup extends StatefulWidget {
   final ValueChanged<String>? onTitleChanged;
   final ValueChanged<String>? onBrandChanged;
   final void Function(EditItemData edited) onSave;
-  final VoidCallback onDelete;
+  final VoidCallback? onDelete;
   final VoidCallback onReturn;
 
   const EditItemPopup({
@@ -41,7 +41,7 @@ class EditItemPopup extends StatefulWidget {
     this.onTitleChanged,
     this.onBrandChanged,
     required this.onSave,
-    required this.onDelete,
+    this.onDelete,
     required this.onReturn,
   });
 
@@ -95,7 +95,7 @@ class _EditItemPopupState extends State<EditItemPopup> {
         borderRadius: BorderRadius.circular(12),
         child: Container(
           color: Colors.white,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -106,10 +106,10 @@ class _EditItemPopupState extends State<EditItemPopup> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _buildTextField('Title', _titleController,
                   onChanged: (v) => widget.onTitleChanged?.call(v)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildDropdown(
                 label: 'Category',
                 value: _category,
@@ -122,7 +122,7 @@ class _EditItemPopupState extends State<EditItemPopup> {
                 ],
                 onChanged: (v) => setState(() => _category = v),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildDropdown(
                 label: 'Color',
                 value: _color,
@@ -137,10 +137,10 @@ class _EditItemPopupState extends State<EditItemPopup> {
                 ],
                 onChanged: (v) => setState(() => _color = v),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildTextField('Brand', _brandController,
                   onChanged: (v) => widget.onBrandChanged?.call(v)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildDropdown(
                 label: 'Tag',
                 value: _tag,
@@ -153,10 +153,10 @@ class _EditItemPopupState extends State<EditItemPopup> {
                 ],
                 onChanged: (v) => setState(() => _tag = v),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _buildTextField('Price', _priceController,
                   keyboardType: TextInputType.number),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -188,19 +188,131 @@ class _EditItemPopupState extends State<EditItemPopup> {
                       foregroundColor: Colors.black,
                       side: const BorderSide(color: Colors.black54),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                          horizontal: 16, vertical: 10),
                     ),
                     child: const Text('Return'),
                   ),
-                  TextButton(
-                    onPressed: widget.onDelete,
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                  if (widget.onDelete != null)
+                    TextButton(
+                      onPressed: () async {
+                        final bool? confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (confirmCtx) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            title: const Text(
+                              'Confirm deletion of this item?',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                            content: const Text(
+                              'Be aware, once you delete this item, it cannot be retrieved.',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                            actionsPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            actions: [
+                              OutlinedButton(
+                                onPressed: () =>
+                                    Navigator.of(confirmCtx).pop(false),
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                  side: const BorderSide(color: Colors.black26),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 10),
+                                ),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () =>
+                                    Navigator.of(confirmCtx).pop(true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 10),
+                                ),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          try {
+                            widget.onDelete!.call();
+                          } catch (_) {}
+                          final OverlayState? overlay =
+                              Navigator.of(context, rootNavigator: true)
+                                  .overlay;
+                          if (overlay != null) {
+                            late OverlayEntry entry;
+                            entry = OverlayEntry(
+                              builder: (ctx) => SafeArea(
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: Container(
+                                      margin: const EdgeInsets.only(top: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border:
+                                            Border.all(color: Colors.black26),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.12),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 420),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Successfully Delete Item.',
+                                            style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                          Text(
+                                            widget.initialTitle.isEmpty
+                                                ? 'Untitled'
+                                                : widget.initialTitle,
+                                            style: const TextStyle(
+                                                color: Colors.black),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                            overlay.insert(entry);
+                            Future.delayed(const Duration(seconds: 2), () {
+                              entry.remove();
+                            });
+                          }
+                          if (mounted) {
+                            Navigator.of(context, rootNavigator: true).pop();
+                          }
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                      ),
+                      child: const Text('Delete'),
                     ),
-                    child: const Text('Delete'),
-                  ),
                   ElevatedButton(
                     onPressed: () {
                       final EditItemData data = EditItemData(
@@ -218,7 +330,7 @@ class _EditItemPopupState extends State<EditItemPopup> {
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                          horizontal: 20, vertical: 10),
                     ),
                     child: const Text('Save'),
                   ),

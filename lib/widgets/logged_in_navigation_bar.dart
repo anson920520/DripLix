@@ -50,73 +50,87 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                // Left cluster: Logo + Search button
-                SizedBox(
-                  height: 56,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Driplix logo (covered when search expands)
-                      Opacity(
-                        opacity: _isSearchExpanded ? 0.0 : 1.0,
-                        child: IgnorePointer(
-                          ignoring: _isSearchExpanded,
-                          child: Image.asset(
-                            'assets/images/navigation/Driplix Logo.png',
-                            height: 40,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Text(
-                                'DripLix',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 59,
-                        height: 50,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _isSearchExpanded = !_isSearchExpanded;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Center(
-                            child: Image.asset(
-                              'assets/images/navigation/Searchbar/Search.png',
-                              width: 32,
-                              height: 32,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.search,
-                                    color: Colors.black);
-                              },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final bool tightCenter =
+                    constraints.maxWidth < 880; // hides some center icons
+                final bool veryTight =
+                    constraints.maxWidth < 640; // collapse right icons
+                return Row(
+                  children: [
+                    // Left cluster: Logo + Search button
+                    SizedBox(
+                      height: 56,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Driplix logo (covered when search expands)
+                          Opacity(
+                            opacity: _isSearchExpanded ? 0.0 : 1.0,
+                            child: IgnorePointer(
+                              ignoring: _isSearchExpanded,
+                              child: Image.asset(
+                                'assets/images/navigation/Driplix Logo.png',
+                                height: 40,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Text(
+                                    'DripLix',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                        ),
+                          SizedBox(
+                            width: 59,
+                            height: 50,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _isSearchExpanded = !_isSearchExpanded;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/images/navigation/Searchbar/Search.png',
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.search,
+                                        color: Colors.black);
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const Spacer(),
+                    const Spacer(),
 
-                // Center cluster: 4 buttons
-                _buildCenterButtons(),
+                    // Center cluster: 4 buttons, may overflow to menu
+                    if (!tightCenter)
+                      _buildCenterButtons()
+                    else
+                      _buildCollapsedCenter(),
 
-                const Spacer(),
+                    const Spacer(),
 
-                // Right cluster: try_on, notifications, avatar
-                _buildRightButtons(),
-              ],
+                    // Right cluster: may overflow to menu
+                    if (!veryTight)
+                      _buildRightButtons()
+                    else
+                      _buildCollapsedRight(),
+                  ],
+                );
+              },
             ),
           ),
 
@@ -212,6 +226,75 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
     );
   }
 
+  Widget _buildCollapsedCenter() {
+    return PopupMenuButton<String>(
+      tooltip: 'Navigate',
+      icon: const Icon(Icons.apps, color: Colors.black),
+      onSelected: (value) {
+        if (value == 'home') {
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/explore') {
+            Navigator.of(context).pushReplacementNamed('/explore');
+          }
+          setState(() {
+            _activeCenterIndex = 0;
+          });
+        } else if (value == 'wardrobe') {
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/wardrobe') {
+            Navigator.of(context).pushReplacementNamed('/wardrobe');
+          }
+          setState(() {
+            _activeCenterIndex = 1;
+          });
+        } else if (value == 'bookmark') {
+          setState(() {
+            _activeCenterIndex = 2;
+          });
+        } else if (value == 'marketplace') {
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/marketplace') {
+            Navigator.of(context).pushReplacementNamed('/marketplace');
+          }
+          setState(() {
+            _activeCenterIndex = 3;
+          });
+        }
+      },
+      itemBuilder: (context) => const <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(value: 'home', child: Text('Home')),
+        PopupMenuItem<String>(value: 'wardrobe', child: Text('Wardrobe')),
+        PopupMenuItem<String>(value: 'bookmark', child: Text('Bookmark')),
+        PopupMenuItem<String>(value: 'marketplace', child: Text('Marketplace')),
+      ],
+    );
+  }
+
+  Widget _buildCollapsedRight() {
+    return PopupMenuButton<String>(
+      tooltip: 'More',
+      icon: const Icon(Icons.more_horiz, color: Colors.black),
+      onSelected: (value) {
+        if (value == 'tryon') {
+          // TODO: wire try on when available
+        } else if (value == 'notifications') {
+          // TODO: wire notifications when available
+        } else if (value == 'profile') {
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/profile') {
+            Navigator.of(context).pushReplacementNamed('/profile');
+          }
+        }
+      },
+      itemBuilder: (context) => const <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(value: 'tryon', child: Text('Try on')),
+        PopupMenuItem<String>(
+            value: 'notifications', child: Text('Notifications')),
+        PopupMenuItem<String>(value: 'profile', child: Text('Profile')),
+      ],
+    );
+  }
+
   Widget _buildCenterButtons() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -237,7 +320,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
         _centerButton(
           index: 3,
           asset: 'assets/images/navigation/shop_icon.png',
-          tooltip: 'Shop',
+          tooltip: 'Marketplace',
         ),
       ],
     );
@@ -274,6 +357,15 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/wardrobe') {
             Navigator.of(context).pushReplacementNamed('/wardrobe');
+          }
+          setState(() {
+            _activeCenterIndex = index;
+          });
+        } else if (index == 3) {
+          // Marketplace
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/marketplace') {
+            Navigator.of(context).pushReplacementNamed('/marketplace');
           }
           setState(() {
             _activeCenterIndex = index;
@@ -315,12 +407,18 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
             tooltip: 'Notifications'),
         const SizedBox(width: 8),
         _iconButton('assets/images/navigation/Generic avatar (1).png',
-            size: 32, tooltip: 'Profile'),
+            size: 32, tooltip: 'Profile', onTap: () {
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != '/profile') {
+            Navigator.of(context).pushReplacementNamed('/profile');
+          }
+        }),
       ],
     );
   }
 
-  Widget _iconButton(String asset, {double size = 28, String? tooltip}) {
+  Widget _iconButton(String asset,
+      {double size = 28, String? tooltip, VoidCallback? onTap}) {
     final Widget image = Image.asset(
       asset,
       width: size,
@@ -331,7 +429,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
       },
     );
     final Widget button = InkWell(
-      onTap: () {},
+      onTap: onTap ?? () {},
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.all(6.0),

@@ -9,6 +9,9 @@ class ItemPreviewPopup extends StatelessWidget {
   final String brand;
   final VoidCallback onClose;
   final VoidCallback? onUploadRequested;
+  final bool showWishlistActions;
+  final VoidCallback? onFitting;
+  final VoidCallback? onGetDrip;
 
   const ItemPreviewPopup({
     super.key,
@@ -19,6 +22,9 @@ class ItemPreviewPopup extends StatelessWidget {
     required this.brand,
     required this.onClose,
     this.onUploadRequested,
+    this.showWishlistActions = false,
+    this.onFitting,
+    this.onGetDrip,
   });
 
   @override
@@ -46,7 +52,8 @@ class ItemPreviewPopup extends StatelessWidget {
                   ? InkWell(
                       onTap: onUploadRequested,
                       child: Container(
-                        color: Colors.grey[200],
+                        constraints: const BoxConstraints.expand(),
+                        color: const Color(0xFFF3EDF7),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -59,20 +66,42 @@ class ItemPreviewPopup extends StatelessWidget {
                         ),
                       ),
                     )
-                  : Image.asset(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Center(
-                            child: Icon(Icons.image, color: Colors.black45),
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          imageUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Center(
+                                child: Icon(Icons.image, color: Colors.black45),
+                              ),
+                            );
+                          },
+                        ),
+                        if (showWishlistActions)
+                          Positioned(
+                            right: 12,
+                            bottom: 12,
+                            child: Row(
+                              children: [
+                                _actionChip('Fitting', onFitting),
+                                const SizedBox(width: 8),
+                                _actionChip('Get Drip', onGetDrip),
+                              ],
+                            ),
                           ),
-                        );
-                      },
+                      ],
                     ),
             ),
-            Padding(
+            Container(
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.black12),
+                ),
+              ),
               padding:
                   const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
               child: Row(
@@ -111,6 +140,35 @@ class ItemPreviewPopup extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionChip(String label, VoidCallback? onPressed) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black26),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.notoSerif(fontSize: 12, color: Colors.black),
+          ),
         ),
       ),
     );

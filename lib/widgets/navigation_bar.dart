@@ -70,8 +70,14 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final bool isCompact = constraints.maxWidth < 600;
-                final bool isTight = constraints.maxWidth < 420;
+                final bool isCompact = constraints.maxWidth < 720;
+                final bool isTight = constraints.maxWidth < 520;
+
+                // Decide which buttons can be shown inline
+                final bool showExplore = !widget.showSearchBar && !isTight;
+                final bool showAuth =
+                    !isCompact; // shows Sign in/Sign up when wide enough
+                final bool needsOverflowMenu = !(showExplore && showAuth);
 
                 return Row(
                   children: [
@@ -100,7 +106,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (!isTight && !widget.showSearchBar)
+                              if (showExplore)
                                 _buildNavButton(
                                   '',
                                   'assets/images/navigation/Explore_tab.png',
@@ -108,22 +114,21 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                                     Navigator.of(context).pushNamed('/explore');
                                   },
                                 ),
-                              if (!isTight && !widget.showSearchBar)
-                                const SizedBox(width: 8),
-                              if (!isCompact)
+                              if (showExplore) const SizedBox(width: 8),
+                              if (showAuth)
                                 _buildNavButton(
                                   '',
                                   'assets/images/navigation/Sign_in_tab.png',
                                   onTap: widget.onSignIn,
                                 ),
-                              if (!isCompact) const SizedBox(width: 8),
-                              if (!isCompact)
+                              if (showAuth) const SizedBox(width: 8),
+                              if (showAuth)
                                 _buildNavButton(
                                   '',
                                   'assets/images/navigation/Sign_up_tab.png',
                                   onTap: widget.onSignUp,
                                 ),
-                              if (!isCompact) const SizedBox(width: 8),
+                              if (showAuth) const SizedBox(width: 8),
                               _buildNavButton(
                                 '',
                                 widget.isListUnfolded
@@ -131,6 +136,13 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                                     : 'assets/images/navigation/folded_list_icon.png',
                                 onTap: widget.onListToggle,
                               ),
+                              if (needsOverflowMenu) const SizedBox(width: 8),
+                              if (needsOverflowMenu)
+                                _buildOverflowMenu(
+                                  showExploreInMenu: !showExplore,
+                                  showSignInInMenu: !showAuth,
+                                  showSignUpInMenu: !showAuth,
+                                ),
                             ],
                           ),
                         ),
@@ -144,6 +156,63 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
           if (widget.showSearchBar) _buildCenteredSearchCard(),
         ],
       ),
+    );
+  }
+
+  Widget _buildOverflowMenu({
+    required bool showExploreInMenu,
+    required bool showSignInInMenu,
+    required bool showSignUpInMenu,
+  }) {
+    return PopupMenuButton<String>(
+      tooltip: 'More',
+      icon: const Icon(Icons.more_horiz, color: Colors.black),
+      onSelected: (value) {
+        if (value == 'explore') {
+          Navigator.of(context).pushNamed('/explore');
+        } else if (value == 'signin') {
+          widget.onSignIn?.call();
+        } else if (value == 'signup') {
+          widget.onSignUp?.call();
+        }
+      },
+      itemBuilder: (context) {
+        final List<PopupMenuEntry<String>> items = [];
+        if (showExploreInMenu) {
+          items.add(
+            const PopupMenuItem<String>(
+              value: 'explore',
+              child: Text('Explore'),
+            ),
+          );
+        }
+        if (showSignInInMenu) {
+          items.add(
+            const PopupMenuItem<String>(
+              value: 'signin',
+              child: Text('Sign in'),
+            ),
+          );
+        }
+        if (showSignUpInMenu) {
+          items.add(
+            const PopupMenuItem<String>(
+              value: 'signup',
+              child: Text('Sign up'),
+            ),
+          );
+        }
+        if (items.isEmpty) {
+          // Fallback to avoid empty menu (should not happen due to guard)
+          items.add(
+            const PopupMenuItem<String>(
+              value: 'noop',
+              child: Text('No extra actions'),
+            ),
+          );
+        }
+        return items;
+      },
     );
   }
 
