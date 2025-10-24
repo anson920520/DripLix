@@ -1,12 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_receiver.dart';
 import '../services/auth_state.dart';
 import '../config/debug_flags.dart';
 
-class SignInPopup extends StatefulWidget {
+class SignInPopup extends ConsumerStatefulWidget {
   final VoidCallback? onClose;
   final VoidCallback? onSignUp;
 
@@ -17,10 +17,10 @@ class SignInPopup extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<SignInPopup> createState() => _SignInPopupState();
+  ConsumerState<SignInPopup> createState() => _SignInPopupState();
 }
 
-class _SignInPopupState extends State<SignInPopup> {
+class _SignInPopupState extends ConsumerState<SignInPopup> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _accountTypeController = TextEditingController();
   final TextEditingController _emailOrUsernameController =
@@ -64,7 +64,7 @@ class _SignInPopupState extends State<SignInPopup> {
     });
 
     if (errors.isEmpty) {
-      final receiver = const AuthReceiverService();
+      const receiver = AuthReceiverService();
       receiver
           .receiveSignIn(
         accountType: _accountTypeController.text,
@@ -73,11 +73,10 @@ class _SignInPopupState extends State<SignInPopup> {
       )
           .then((payload) {
         // Mark app as logged in
-        final AuthState auth = AuthScope.of(context);
-        auth.setLoggedIn(true);
+        ref.read(authProvider.notifier).setLoggedIn(true);
         // TEST-ONLY: show submitted payload in a dialog for verification.
         // To remove later, delete this block or set DebugFlags.showAuthTestDialogs = false.
-        if (DebugFlags.showAuthTestDialogs) {
+        if (DebugFlags.showAuthTestDialogs && mounted) {
           showDialog(
             context: context,
             builder: (ctx) {
@@ -138,10 +137,10 @@ class _SignInPopupState extends State<SignInPopup> {
 
     double windowHeight = 415.0;
     if (hasErrors) {
-      final baseHeight = 415.0;
+      const baseHeight = 415.0;
       final errorCount = _fieldErrors.length;
       final errorSpace = errorCount * 20.0;
-      final buffer = 40.0;
+      const buffer = 40.0;
       windowHeight = baseHeight + errorSpace + buffer;
       final maxHeight = screenSize.height * 0.9;
       windowHeight = windowHeight.clamp(415.0, maxHeight);
@@ -160,7 +159,7 @@ class _SignInPopupState extends State<SignInPopup> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -486,7 +485,7 @@ class _SignInPopupState extends State<SignInPopup> {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -572,7 +571,7 @@ class _SignInPopupState extends State<SignInPopup> {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),

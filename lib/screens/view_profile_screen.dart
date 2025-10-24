@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/logged_in_navigation_bar.dart';
@@ -7,7 +8,7 @@ import '../widgets/social_links_panel.dart';
 import '../widgets/confirm_dialog.dart';
 import '../services/auth_state.dart';
 
-class ViewProfileScreen extends StatefulWidget {
+class ViewProfileScreen extends ConsumerStatefulWidget {
   final String userId;
   final String userCustomName;
   final String userName;
@@ -30,10 +31,10 @@ class ViewProfileScreen extends StatefulWidget {
   });
 
   @override
-  State<ViewProfileScreen> createState() => _ViewProfileScreenState();
+  ConsumerState<ViewProfileScreen> createState() => _ViewProfileScreenState();
 }
 
-class _ViewProfileScreenState extends State<ViewProfileScreen> {
+class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   int _activeTabIndex = 0; // 0=OOTD, 1=Bookmarks, 2=Social Media
   
   // Friend/Follow states
@@ -42,7 +43,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLoggedIn = AuthScope.of(context).isLoggedIn;
+    final bool isLoggedIn = ref.watch(authProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(

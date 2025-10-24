@@ -1,28 +1,15 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class AuthState extends ChangeNotifier {
-  bool _isLoggedIn = false;
+part 'auth_state.g.dart';
 
-  bool get isLoggedIn => _isLoggedIn;
-
-  void setLoggedIn(bool loggedIn) {
-    if (_isLoggedIn == loggedIn) return;
-    _isLoggedIn = loggedIn;
-    notifyListeners();
+@riverpod
+class Auth extends _$Auth {
+  @override
+  bool build() {
+    return false;
   }
-}
-
-class AuthScope extends InheritedNotifier<AuthState> {
-  const AuthScope(
-      {Key? key, required AuthState notifier, required Widget child})
-      : super(key: key, notifier: notifier, child: child);
-
-  static AuthState of(BuildContext context) {
-    final AuthScope? scope =
-        context.dependOnInheritedWidgetOfExactType<AuthScope>();
-    assert(scope != null,
-        'AuthScope not found in context. Ensure MaterialApp is wrapped.');
-    return scope!.notifier!;
+  
+  void setLoggedIn(bool loggedIn) {
+    state = loggedIn;
   }
 }

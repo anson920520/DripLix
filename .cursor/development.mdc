@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+---
+Strictly use MVVM structure (View, ViewModel, repository, service) to develop this flutter project!!! ViewModel should NOT call the service directly! Use repository layer instead!
+Each method in a service corresponds to a SINGLE (No more then 1) API interface. The Repository layer is responsible for calling the service to obtain data, passing the data to the ViewModel after assembly, and accepting the call request from the ViewModel.
+
+Use classes to parse JSON and data objects in the service layer. For Literal objects (such as gender), use enum instead of string definition. For date objects, use Date type instead of String type. The i18n should be perfectly supported if you strictly obey this rule.
+
+The Service layer should do nothing except converting the original JSON format into Flutter classes. The Repository layer needs to convert the data obtained from the Service layer (which may be methods in multiple Services) into a format that can be DIRECTLY used (without any other conversion) by the ViewModel.
+
+DO NOT USE DYNAMIC TYPE IN ANY FLUTTER CLASSES!!!!!! If you actually need to process multi types in API responses, you may use Union types to keep type safety.
+
+Repository objects instantiated should be located in the MultiProvider at the top level of the application tree to implement a global singleton pattern. It is STRICTLY FORBIDDEN to instantiate the Repository class anywhere else.
+
+See https://docs.flutter.dev/app-architecture/guide for more details on the MVVM architecture.
+
+Never refresh the data by other then Riverpod method, especially by the state of Widget!
+
+Use Riverpod in this project.
+
+If necessary, add a Domain layer in this MVVM structure.
+
+Never use print() function which is deprecated, use debugPrint() or log() instead.
+
+When intergrates the API don't hardcode baseURL but uses var baseUrl = dotenv.env['DIO_URL'] ?? 'http://64.176.227.70:9101/v1'; 
+
+When adding new parametre in .env file, also add it into .env.example file with an example value. Use uppercase letters plus underscores to define .env parameters. Other characters are strictly prohibited.
+
+Make sure not to use context at any level other than the View level.
+
+A standalone Widget class may be needed if you wanna embed any widget in the other widget. Do not define a function which returns Widget.

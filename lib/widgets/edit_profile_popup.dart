@@ -49,7 +49,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -183,7 +183,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label + ':', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        Text('$label:', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         Container(
           height: 40,
@@ -300,7 +300,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: platform,
-              items: const ['IG', 'Facebook', 'X', 'TikTok']
+              items: const ['IG', 'Facebook', 'X', 'TikTok', 'Discord', 'YouTube', 'Spotify', 'Threads', '微博', '小红书', '虎扑', 'Other']
                   .map((p) => DropdownMenuItem<String>(value: p, child: Text(p)))
                   .toList(),
               onChanged: (v) {
@@ -405,7 +405,7 @@ class _ProfilePictureEditorState extends State<_ProfilePictureEditor> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
+            color: Colors.black.withValues(alpha: 0.18),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/home_screen.dart';
 import 'screens/explore_screen.dart';
 import 'screens/terms_screen.dart';
 import 'screens/privacy_screen.dart';
 import 'screens/about_screen.dart';
 import 'screens/business_screen.dart';
-import 'services/auth_state.dart';
 import 'screens/wardrobe_screen.dart';
 import 'screens/marketplace_screen.dart';
 import 'screens/profile_screen.dart';
 
 void main() {
-  runApp(const DripLixApp());
+  runApp(const ProviderScope(child: DripLixApp()));
 }
 
 class DripLixApp extends StatelessWidget {
@@ -19,10 +19,7 @@ class DripLixApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthState authState = AuthState();
-    return AuthScope(
-      notifier: authState,
-      child: MaterialApp(
+    return MaterialApp(
         title: 'DripLix',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -62,7 +59,6 @@ class DripLixApp extends StatelessWidget {
           // Post route will be pushed via MaterialPageRoute with arguments, keep here for reference
         },
         debugShowCheckedModeBanner: false,
-      ),
     );
   }
 }

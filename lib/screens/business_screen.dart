@@ -183,7 +183,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
             ),
           if (_showSignUpPopup)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: SignUpPopup(
                 onClose: () {
                   setState(() {
@@ -200,7 +200,7 @@ class _BusinessScreenState extends State<BusinessScreen> {
             ),
           if (_showSignInPopup)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: SignInPopup(
                 onClose: () {
                   setState(() {
@@ -259,13 +259,13 @@ class _BusinessScreenState extends State<BusinessScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             decoration: BoxDecoration(
               color: isHovered
-                  ? Colors.white.withOpacity(0.3)
+                  ? Colors.white.withValues(alpha: 0.3)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(4.0),
               boxShadow: isHovered
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4.0,
                         offset: const Offset(0, 2),
                       ),
