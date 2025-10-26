@@ -217,35 +217,40 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          isLoggedIn
-              ? LoggedInNavigationBar(initialActiveIndex: 3)
-              : CustomNavigationBar(
-                  isListUnfolded: false,
-                  onListToggle: () {},
-                ),
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1370),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 16.0, horizontal: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildLeftPanel(),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildRightPanel()),
-                    ],
+      body: Stack(children: [
+        Column(
+          children: [
+            isLoggedIn
+                ? LoggedInNavigationBar(initialActiveIndex: 3)
+                : CustomNavigationBar(
+                    isListUnfolded: false,
+                    onListToggle: () {},
+                  ),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1370),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLeftPanel(),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildRightPanel()),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        if (isLoggedIn)
+          const Positioned(
+              left: 0, right: 0, bottom: 0, child: LoggedInBottomNavBar(activeIndex: 3)),
+      ]),
     );
   }
 

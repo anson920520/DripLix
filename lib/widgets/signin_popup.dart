@@ -134,6 +134,9 @@ class _SignInPopupState extends ConsumerState<SignInPopup> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final hasErrors = _fieldErrors.isNotEmpty;
+    final double sidePadding = screenSize.width < 480
+        ? 12
+        : (screenSize.width < 720 ? 16 : 0);
 
     double windowHeight = 415.0;
     if (hasErrors) {
@@ -150,61 +153,67 @@ class _SignInPopupState extends ConsumerState<SignInPopup> {
       style: GoogleFonts.notoSerif(),
       child: Stack(
         children: [
-          Center(
-            child: Container(
-              width: 400,
-              height: windowHeight,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: sidePadding, vertical: 12),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Container(
+                  width: double.infinity,
+                  height: windowHeight,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 24, right: 24, top: 4, bottom: 24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildAccountTypeField(),
-                            const SizedBox(height: 14),
-                            _buildInputField(
-                              controller: _emailOrUsernameController,
-                              label: 'Email or Username',
-                              hasCancelButton: true,
-                              errorMessage: _fieldErrors['email or username'],
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 24, right: 24, top: 4, bottom: 24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildAccountTypeField(),
+                                const SizedBox(height: 14),
+                                _buildInputField(
+                                  controller: _emailOrUsernameController,
+                                  label: 'Email or Username',
+                                  hasCancelButton: true,
+                                  errorMessage: _fieldErrors['email or username'],
+                                ),
+                                const SizedBox(height: 14),
+                                _buildInputField(
+                                  controller: _passwordController,
+                                  label: 'Password',
+                                  isPassword: true,
+                                  hasCancelButton: true,
+                                  errorMessage: _fieldErrors['password'],
+                                ),
+                                const SizedBox(height: 18),
+                                _buildForgotPassword(),
+                                const SizedBox(height: 12),
+                                _buildSignInButton(),
+                                const SizedBox(height: 8),
+                                _buildSignUpLink(),
+                              ],
                             ),
-                            const SizedBox(height: 14),
-                            _buildInputField(
-                              controller: _passwordController,
-                              label: 'Password',
-                              isPassword: true,
-                              hasCancelButton: true,
-                              errorMessage: _fieldErrors['password'],
-                            ),
-                            const SizedBox(height: 18),
-                            _buildForgotPassword(),
-                            const SizedBox(height: 12),
-                            _buildSignInButton(),
-                            const SizedBox(height: 8),
-                            _buildSignUpLink(),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

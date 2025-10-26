@@ -39,24 +39,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final bool isLoggedIn = ref.watch(authProvider);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          isLoggedIn
-              ? const LoggedInNavigationBar(initialActiveIndex: 0)
-              : const SizedBox.shrink(),
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1200),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-                  child: _buildProfilePanel(),
+      body: Stack(children: [
+        Column(
+          children: [
+            isLoggedIn
+                ? const LoggedInNavigationBar(initialActiveIndex: 0)
+                : const SizedBox.shrink(),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1200),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+                    child: _buildProfilePanel(),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        if (isLoggedIn)
+          const Positioned(
+              left: 0, right: 0, bottom: 0, child: LoggedInBottomNavBar(activeIndex: 0)),
+      ]),
     );
   }
 

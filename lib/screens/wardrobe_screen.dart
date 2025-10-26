@@ -13,6 +13,9 @@ import '../widgets/wishlist_item_popup.dart';
 const double kWardrobeCardTextSectionHeight =
     41.0; // divider + paddings + title + spacer + brand
 
+// Mobile content overlays that replace the item list area
+enum _MobileOverlay { none, filters, add, edit }
+
 class _WardrobeCard extends StatefulWidget {
   final _WardrobeItem item;
   final double height;
@@ -153,6 +156,11 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   ];
   int _activeModeIndex = 0;
 
+  // Mobile overlay state (replaces item list area on small screens)
+  _MobileOverlay _mobileOverlay = _MobileOverlay.none;
+  String _mobileEditTitle = '';
+  String _mobileEditBrand = '';
+
   // Filters
   final TextEditingController _searchController = TextEditingController();
   String? _selectedCategory;
@@ -218,44 +226,52 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
       });
     }
 
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 720;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          isLoggedIn
-              ? const LoggedInNavigationBar(initialActiveIndex: 1)
-              : CustomNavigationBar(
-                  isListUnfolded: false,
-                  onListToggle: () {},
-                ),
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1370),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 16.0, horizontal: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildLeftPanel(),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildRightWardrobe()),
-                    ],
+      body: Stack(children: [
+        Column(
+          children: [
+            isLoggedIn
+                ? const LoggedInNavigationBar(initialActiveIndex: 1)
+                : CustomNavigationBar(
+                    isListUnfolded: false,
+                    onListToggle: () {},
+                  ),
+            Expanded(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1370),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 8.0),
+                    child: isMobile
+                        ? _buildRightWardrobe()
+                        : Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLeftPanel(),
+                              const SizedBox(width: 16),
+                              Expanded(child: _buildRightWardrobe()),
+                            ],
+                          ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        if (isLoggedIn)
+          Positioned(left: 0, right: 0, bottom: 0, child: const LoggedInBottomNavBar(activeIndex: 1)),
+      ]),
     );
   }
 
-  Widget _buildLeftPanel() {
+  Widget _buildLeftPanel({bool mobileFull = false}) {
     return SizedBox(
-      width: 345,
-      height: 952,
+      width: mobileFull ? double.infinity : 345,
+      height: mobileFull ? null : 952,
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFFCF1F1),
@@ -309,7 +325,9 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                   );
                 }),
               ),
-              const Spacer(),
+              // Spacer causes unbounded height error inside scroll on mobile
+              // Use fixed spacing when rendering in mobile full mode
+              mobileFull ? const SizedBox(height: 12) : const Spacer(),
               Center(
                 child: Container(
                   width: 60,
@@ -386,6 +404,98 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
         ),
       ),
     );
+  }
+
+  // Build the mobile overlay content replacing the item list area
+  Widget _buildMobileOverlayContent() {
+    switch (_mobileOverlay) {
+      case _MobileOverlay.filters:
+        return _buildMobileFiltersPanel();
+      case _MobileOverlay.add:
+      case _MobileOverlay.edit:
+        return _buildMobileEditPanel();
+      case _MobileOverlay.none:
+      default:
+        return _buildRightWardrobe();
+    }
+  }
+
+  Widget _buildMobileFiltersPanel() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: _buildLeftPanel(mobileFull: true),
+    );
+  }
+
+  Widget _buildMobileEditPanel() {
+    return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () {
+                    setState(() {
+                      _mobileOverlay = _MobileOverlay.none;
+                    });
+                  },
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _mobileOverlay == _MobileOverlay.add ? 'Add Item' : 'Edit Item',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Colors.black12),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: EditItemPopup(
+                width: MediaQuery.of(context).size.width - 24,
+                height: 820,
+                initialTitle: _mobileEditTitle,
+                initialBrand: _mobileEditBrand,
+                plain: true,
+                onTitleChanged: (v) => setState(() => _mobileEditTitle = v),
+                onBrandChanged: (v) => setState(() => _mobileEditBrand = v),
+                onSave: (edited) {
+                  final bool isAdd = _mobileOverlay == _MobileOverlay.add;
+                  setState(() {
+                    _mobileOverlay = _MobileOverlay.none;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(isAdd ? 'Item created' : 'Item saved')),
+                  );
+                },
+                onDelete: _mobileOverlay == _MobileOverlay.edit
+                    ? () {
+                        setState(() {
+                          _mobileOverlay = _MobileOverlay.none;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Item deleted')),
+                        );
+                      }
+                    : null,
+                onReturn: () {
+                  setState(() {
+                    _mobileOverlay = _MobileOverlay.none;
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      );
   }
 
   Widget _searchField() {
@@ -499,6 +609,11 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
 
   Widget _buildRightWardrobe() {
     final List<String> categories = _itemsByCategory.keys.toList();
+    final bool isMobile = MediaQuery.of(context).size.width < 720;
+    final double headerHeight = isMobile ? 44 : 49;
+    final double headerFontSize = isMobile ? 16 : 18;
+    final double addBarHeight = isMobile ? 44 : 56;
+    final double addIconSize = isMobile ? 24 : 28;
     return Stack(
       children: [
         Container(
@@ -520,49 +635,91 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
             children: [
               // Header with current wardrobe type (independent 1206x49 bar)
               SizedBox(
-                height: 49,
-                child: Center(
-                  child: Container(
-                    width: 1206,
-                    height: 49,
-                    color: const Color(0xFFE3DCDC),
+                height: headerHeight,
+                child: Container(
+                  width: double.infinity,
+                  height: headerHeight,
+                  color: const Color(0xFFE3DCDC),
+                  child: Stack(
                     alignment: Alignment.center,
-                    child: Text(
-                      _modes[_activeModeIndex],
-                      style: GoogleFonts.notoSerif(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
+                    children: [
+                      // Centered title
+                      Text(
+                        _modes[_activeModeIndex],
+                        style: GoogleFonts.notoSerif(
+                          fontSize: headerFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
+                      // Left-most filter button (mobile only)
+                      if (isMobile)
+                        Positioned(
+                          left: 8,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                _mobileOverlay = _mobileOverlay == _MobileOverlay.filters
+                                    ? _MobileOverlay.none
+                                    : _MobileOverlay.filters;
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              height: headerHeight - 12,
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.black12, width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.filter_list, size: 18, color: Colors.black),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Filters',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
               // Hanger logo bar (independent white bar with centered logo)
-              if (_activeModeIndex == 0)
+              if (_activeModeIndex == 0 && !(isMobile && _mobileOverlay == _MobileOverlay.filters))
                 SizedBox(
-                  height: 56,
-                  child: Center(
-                    child: Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.black26, width: 1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      alignment: Alignment.center,
-                      child: InkWell(
-                        onTap: _openAddNewItemPopup,
-                        borderRadius: BorderRadius.circular(4),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.asset(
-                            'assets/images/wardrobe/iconstack.io - (Hanger).png',
-                            width: 28,
-                            height: 28,
-                            errorBuilder: (c, e, s) =>
-                                const SizedBox(width: 28, height: 28),
+                  height: addBarHeight,
+                  child: Container(
+                    width: double.infinity,
+                    height: addBarHeight,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.black26, width: 1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    alignment: Alignment.center,
+                    child: InkWell(
+                      onTap: _openAddNewItemPopup,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Image.asset(
+                          'assets/images/wardrobe/iconstack.io - (Hanger).png',
+                          width: addIconSize,
+                          height: addIconSize,
+                          errorBuilder: (c, e, s) => SizedBox(
+                            width: addIconSize,
+                            height: addIconSize,
                           ),
                         ),
                       ),
@@ -571,77 +728,119 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                 ),
               // Body scroll
               Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Align(
-                          alignment: Alignment.centerRight,
-                          child: SizedBox.shrink(),
-                        ),
-                        const SizedBox(height: 12),
-                        for (final String category in categories) ...[
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE3DCDC),
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    blurRadius: 16,
-                                    spreadRadius: 1,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              child: Text(
-                                category,
-                                style: GoogleFonts.notoSerif(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black,
-                                ),
-                              ),
+                child: isMobile && _mobileOverlay != _MobileOverlay.none
+                    ? (_mobileOverlay == _MobileOverlay.filters
+                        ? SingleChildScrollView(
+                            padding: const EdgeInsets.all(12),
+                            child: _buildLeftPanel(mobileFull: true),
+                          )
+                        : SingleChildScrollView(
+                            padding: const EdgeInsets.all(12),
+                            child: EditItemPopup(
+                              width: MediaQuery.of(context).size.width - 24,
+                              height: 820,
+                              initialTitle: _mobileEditTitle,
+                              initialBrand: _mobileEditBrand,
+                              plain: true,
+                              onTitleChanged: (v) => setState(() => _mobileEditTitle = v),
+                              onBrandChanged: (v) => setState(() => _mobileEditBrand = v),
+                              onSave: (edited) {
+                                final bool isAdd = _mobileOverlay == _MobileOverlay.add;
+                                setState(() {
+                                  _mobileOverlay = _MobileOverlay.none;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(isAdd ? 'Item created' : 'Item saved')),
+                                );
+                              },
+                              onDelete: _mobileOverlay == _MobileOverlay.edit
+                                  ? () {
+                                      setState(() {
+                                        _mobileOverlay = _MobileOverlay.none;
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Item deleted')),
+                                      );
+                                    }
+                                  : null,
+                              onReturn: () {
+                                setState(() {
+                                  _mobileOverlay = _MobileOverlay.none;
+                                });
+                              },
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
+                          ))
+                    : SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _SmallSideArrow(
-                                direction: AxisDirection.left,
-                                onPressed: () =>
-                                    _scrollCategory(category, -300),
+                              const Align(
+                                alignment: Alignment.centerRight,
+                                child: SizedBox.shrink(),
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: SizedBox(
-                                  height: 240,
-                                  child: _buildCategoryRow(
-                                    _itemsByCategory[category] ??
-                                        <_WardrobeItem>[],
-                                    category,
+                              const SizedBox(height: 12),
+                              for (final String category in categories) ...[
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE3DCDC),
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.2),
+                                          blurRadius: 16,
+                                          spreadRadius: 1,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    child: Text(
+                                      category,
+                                      style: GoogleFonts.notoSerif(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              _SmallSideArrow(
-                                direction: AxisDirection.right,
-                                onPressed: () => _scrollCategory(category, 300),
-                              ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    _SmallSideArrow(
+                                      direction: AxisDirection.left,
+                                      onPressed: () =>
+                                          _scrollCategory(category, -300),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 240,
+                                        child: _buildCategoryRow(
+                                          _itemsByCategory[category] ??
+                                              <_WardrobeItem>[],
+                                          category,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _SmallSideArrow(
+                                      direction: AxisDirection.right,
+                                      onPressed: () => _scrollCategory(category, 300),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 16),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -780,6 +979,40 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
     int? imageWidth,
     int? imageHeight,
   }) {
+    if (MediaQuery.of(context).size.width < 720) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (ctx) => Scaffold(
+            backgroundColor: Colors.white,
+            body: Column(
+              children: [
+                const LoggedInNavigationBar(initialActiveIndex: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(12),
+                    child: ViewItemPopup(
+                      width: MediaQuery.of(ctx).size.width - 24,
+                      height: 820,
+                      title: title,
+                      brand: brand,
+                      onReturn: () => Navigator.of(ctx).pop(),
+                      onTryOn: () {
+                        Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Try On not implemented')),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const LoggedInBottomNavBar(activeIndex: 1),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -844,6 +1077,58 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
     required bool showDelete,
     required bool showMove,
   }) {
+    if (MediaQuery.of(context).size.width < 720) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (ctx) => Scaffold(
+            backgroundColor: Colors.white,
+            body: Column(
+              children: [
+                const LoggedInNavigationBar(initialActiveIndex: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(12),
+                    child: WishlistItemPopup(
+                      width: MediaQuery.of(ctx).size.width - 24,
+                      height: 820,
+                      title: title,
+                      brand: brand,
+                      shop: '',
+                      dateAdded: '',
+                      onReturn: () => Navigator.of(ctx).pop(),
+                      onTryOn: () {
+                        Navigator.of(ctx).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Try On not implemented')),
+                        );
+                      },
+                      onDelete: showDelete
+                          ? () {
+                              Navigator.of(ctx).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Item deleted from wishlist')),
+                              );
+                            }
+                          : null,
+                      onMoveToWardrobe: showMove
+                          ? () {
+                              Navigator.of(ctx).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Moved to Wardrobe')),
+                              );
+                            }
+                          : null,
+                    ),
+                  ),
+                ),
+                const LoggedInBottomNavBar(activeIndex: 1),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -934,6 +1219,14 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
     int? imageWidth,
     int? imageHeight,
   }) {
+    if (MediaQuery.of(context).size.width < 720) {
+      setState(() {
+        _mobileEditTitle = title;
+        _mobileEditBrand = brand;
+        _mobileOverlay = _MobileOverlay.edit;
+      });
+      return;
+    }
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -1000,6 +1293,14 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   }
 
   void _openAddNewItemPopup() {
+    if (MediaQuery.of(context).size.width < 720) {
+      setState(() {
+        _mobileEditTitle = '';
+        _mobileEditBrand = '';
+        _mobileOverlay = _MobileOverlay.add;
+      });
+      return;
+    }
     showDialog(
       context: context,
       barrierDismissible: true,

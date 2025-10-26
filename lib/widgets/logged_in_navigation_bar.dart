@@ -52,10 +52,8 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final bool tightCenter =
-                    constraints.maxWidth < 880; // hides some center icons
-                final bool veryTight =
-                    constraints.maxWidth < 640; // collapse right icons
+                final bool isMobile = constraints.maxWidth < 720;
+                final bool tightCenter = constraints.maxWidth < 880;
                 return Row(
                   children: [
                     // Left cluster: Logo + Search button
@@ -115,19 +113,13 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
 
                     const Spacer(),
 
-                    // Center cluster: 4 buttons, may overflow to menu
-                    if (!tightCenter)
-                      _buildCenterButtons()
-                    else
-                      _buildCollapsedCenter(),
+                    // Center cluster: hidden on mobile (moved to bottom nav)
+                    if (!tightCenter && !isMobile) _buildCenterButtons(),
 
                     const Spacer(),
 
-                    // Right cluster: may overflow to menu
-                    if (!veryTight)
-                      _buildRightButtons()
-                    else
-                      _buildCollapsedRight(),
+                    // Right cluster: always show, compact on mobile
+                    _buildRightButtons(compact: isMobile),
                   ],
                 );
               },
@@ -402,17 +394,18 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
     return button;
   }
 
-  Widget _buildRightButtons() {
+  Widget _buildRightButtons({bool compact = false}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _iconButton('assets/images/navigation/try_on.png', tooltip: 'Try on'),
+        _iconButton('assets/images/navigation/try_on.png',
+            size: compact ? 24 : 28, tooltip: 'Try on'),
         const SizedBox(width: 8),
         _iconButton('assets/images/navigation/notifications.png',
-            tooltip: 'Notifications'),
+            size: compact ? 24 : 28, tooltip: 'Notifications'),
         const SizedBox(width: 8),
         _iconButton('assets/images/navigation/Generic avatar (1).png',
-            size: 32, tooltip: 'Profile', onTap: () {
+            size: compact ? 28 : 32, tooltip: 'Profile', onTap: () {
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/profile') {
             Navigator.of(context).pushReplacementNamed('/profile');
@@ -445,5 +438,80 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
       return Tooltip(message: tooltip, child: button);
     }
     return button;
+  }
+}
+
+class LoggedInBottomNavBar extends StatelessWidget {
+  final int activeIndex; // 0=Home,1=Wardrobe,2=Bookmark,3=Shop; -1=none
+
+  const LoggedInBottomNavBar({super.key, this.activeIndex = -1});
+
+  @override
+  Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth >= 720) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        border: Border.all(color: Colors.black12, width: 1),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _bottomItem(context, index: 0, asset: 'assets/images/navigation/home_icon.png', route: '/explore'),
+          _bottomItem(context, index: 1, asset: 'assets/images/navigation/Wardrobe_icon.png', route: '/wardrobe'),
+          _bottomItem(context, index: 2, asset: 'assets/images/navigation/book_icon.png'),
+          _bottomItem(context, index: 3, asset: 'assets/images/navigation/shop_icon.png', route: '/marketplace'),
+        ],
+      ),
+    );
+  }
+
+  Widget _bottomItem(BuildContext context, {required int index, required String asset, String? route}) {
+    final bool isActive = activeIndex == index;
+    return InkWell(
+      onTap: () {
+        if (route != null) {
+          final String? current = ModalRoute.of(context)?.settings.name;
+          if (current != route) {
+            Navigator.of(context).pushReplacementNamed(route);
+          }
+        }
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            asset,
+            width: 28,
+            height: 28,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.image, size: 24, color: Colors.black);
+            },
+          ),
+          const SizedBox(height: 4),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeInOut,
+            width: isActive ? 36 : 0,
+            height: 2,
+            decoration: const BoxDecoration(color: Colors.black),
+          ),
+        ],
+      ),
+    );
   }
 }

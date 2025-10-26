@@ -26,6 +26,7 @@ class EditItemPopup extends StatefulWidget {
   final double height; // expected 938
   final String initialTitle;
   final String initialBrand;
+  final bool plain; // if true, remove box styling for full-bleed mobile
   final ValueChanged<String>? onTitleChanged;
   final ValueChanged<String>? onBrandChanged;
   final void Function(EditItemData edited) onSave;
@@ -38,6 +39,7 @@ class EditItemPopup extends StatefulWidget {
     required this.height,
     required this.initialTitle,
     required this.initialBrand,
+    this.plain = false,
     this.onTitleChanged,
     this.onBrandChanged,
     required this.onSave,
@@ -77,26 +79,10 @@ class _EditItemPopupState extends State<EditItemPopup> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.width,
-      height: widget.height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    final Widget content = Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -338,7 +324,29 @@ class _EditItemPopupState extends State<EditItemPopup> {
               )
             ],
           ),
-        ),
+    );
+
+    if (widget.plain) {
+      return SizedBox(width: widget.width, height: widget.height, child: content);
+    }
+
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: content,
       ),
     );
   }

@@ -360,6 +360,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 },
               ),
             ),
+          // Logged-in bottom nav on mobile
+          if (isLoggedIn && isCompactNav)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: LoggedInBottomNavBar(activeIndex: 0),
+            ),
         ],
       ),
     );
@@ -694,3 +702,4 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Edit popup intentionally not included on Explore page.
 }
+

@@ -179,6 +179,9 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final hasErrors = _fieldErrors.isNotEmpty;
+    final double sidePadding = screenSize.width < 480
+        ? 12
+        : (screenSize.width < 720 ? 16 : 0);
 
     // Calculate dynamic height based on error presence
     double windowHeight = 647.0; // Default fixed size
@@ -201,97 +204,103 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
       child: Stack(
         children: [
           // Main popup
-          Center(
-            child: Container(
-              width: 400,
-              height: windowHeight,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: sidePadding, vertical: 12),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Container(
+                  width: double.infinity,
+                  height: windowHeight,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Header
-                  _buildHeader(),
-                  // Form content
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 24, right: 24, top: 4, bottom: 24),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Username field
-                            _buildInputField(
-                              controller: _usernameController,
-                              label: 'Username',
-                              hasCancelButton: true,
-                              errorMessage: _fieldErrors['username'],
+                  child: Column(
+                    children: [
+                      // Header
+                      _buildHeader(),
+                      // Form content
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 24, right: 24, top: 4, bottom: 24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Username field
+                                _buildInputField(
+                                  controller: _usernameController,
+                                  label: 'Username',
+                                  hasCancelButton: true,
+                                  errorMessage: _fieldErrors['username'],
+                                ),
+                                const SizedBox(height: 6),
+                                
+                                // Email field
+                                _buildInputField(
+                                  controller: _emailController,
+                                  label: 'Email',
+                                  hasCancelButton: true,
+                                  errorMessage: _fieldErrors['email'],
+                                ),
+                                const SizedBox(height: 6),
+                                
+                                // Verification code field
+                                _buildVerificationCodeField(),
+                                const SizedBox(height: 6),
+                                
+                                // Password field
+                                _buildInputField(
+                                  controller: _passwordController,
+                                  label: 'Password',
+                                  isPassword: true,
+                                  hasCancelButton: true,
+                                  errorMessage: _fieldErrors['password'],
+                                ),
+                                const SizedBox(height: 6),
+                                
+                                // Confirm password field
+                                _buildInputField(
+                                  controller: _confirmPasswordController,
+                                  label: 'Confirm Password',
+                                  isPassword: true,
+                                  hasCancelButton: true,
+                                  errorMessage: _fieldErrors['confirmPassword'],
+                                ),
+                                const SizedBox(height: 6),
+                                
+                                // Gender field
+                                _buildGenderField(),
+                                const SizedBox(height: 12),
+                                
+                                // Checkboxes
+                                _buildCheckboxes(),
+                                const SizedBox(height: 12),
+                                
+                                // Sign up button
+                                _buildSignUpButton(),
+                                const SizedBox(height: 8),
+                                
+                                // Sign in link
+                                _buildSignInLink(),
+                              ],
                             ),
-                            const SizedBox(height: 6),
-
-                            // Email field
-                            _buildInputField(
-                              controller: _emailController,
-                              label: 'Email',
-                              hasCancelButton: true,
-                              errorMessage: _fieldErrors['email'],
-                            ),
-                            const SizedBox(height: 6),
-
-                            // Verification code field
-                            _buildVerificationCodeField(),
-                            const SizedBox(height: 6),
-
-                            // Password field
-                            _buildInputField(
-                              controller: _passwordController,
-                              label: 'Password',
-                              isPassword: true,
-                              hasCancelButton: true,
-                              errorMessage: _fieldErrors['password'],
-                            ),
-                            const SizedBox(height: 6),
-
-                            // Confirm password field
-                            _buildInputField(
-                              controller: _confirmPasswordController,
-                              label: 'Confirm Password',
-                              isPassword: true,
-                              hasCancelButton: true,
-                              errorMessage: _fieldErrors['confirmPassword'],
-                            ),
-                            const SizedBox(height: 6),
-
-                            // Gender field
-                            _buildGenderField(),
-                            const SizedBox(height: 12),
-
-                            // Checkboxes
-                            _buildCheckboxes(),
-                            const SizedBox(height: 12),
-
-                            // Sign up button
-                            _buildSignUpButton(),
-                            const SizedBox(height: 8),
-
-                            // Sign in link
-                            _buildSignInLink(),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
