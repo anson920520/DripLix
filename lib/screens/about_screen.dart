@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/navigation_bar.dart';
+import '../widgets/signup_popup.dart';
+import '../widgets/signin_popup.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -11,9 +13,16 @@ class AboutScreen extends StatefulWidget {
 
 class _AboutScreenState extends State<AboutScreen> {
   bool _isListUnfolded = false;
+  bool _showSignUpPopup = false;
+  bool _showSignInPopup = false;
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompactNav = screenWidth < 720;
+    final bool isTightNav = screenWidth < 520;
+    final bool showExploreInNav = !isTightNav;
+    final bool showAuthInNav = !isCompactNav;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -25,6 +34,16 @@ class _AboutScreenState extends State<AboutScreen> {
                 onListToggle: () {
                   setState(() {
                     _isListUnfolded = !_isListUnfolded;
+                  });
+                },
+                onSignUp: () {
+                  setState(() {
+                    _showSignUpPopup = true;
+                  });
+                },
+                onSignIn: () {
+                  setState(() {
+                    _showSignInPopup = true;
                   });
                 },
               ),
@@ -102,16 +121,60 @@ class _AboutScreenState extends State<AboutScreen> {
               right: 10,
               child: Container(
                 width: 186,
-                height: 248,
-                color: const Color(0xFFEBE6EB),
-                child: Column(
-                  children: [
-                    _buildDropdownItem(context, 'About'),
-                    _buildDropdownItem(context, 'Businesses'),
-                    _buildDropdownItem(context, 'Terms of Service'),
-                    _buildDropdownItem(context, 'Privacy Policy'),
-                  ],
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height - 140,
                 ),
+                color: const Color(0xFFEBE6EB),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildDropdownItem(context, 'About'),
+                      _buildDropdownItem(context, 'Businesses'),
+                      _buildDropdownItem(context, 'Terms of Service'),
+                      _buildDropdownItem(context, 'Privacy Policy'),
+                      if (!showExploreInNav)
+                        _buildDropdownItem(context, 'Explore'),
+                      if (!showAuthInNav)
+                        _buildDropdownItem(context, 'Sign in'),
+                      if (!showAuthInNav)
+                        _buildDropdownItem(context, 'Sign up'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (_showSignUpPopup)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: SignUpPopup(
+                onClose: () {
+                  setState(() {
+                    _showSignUpPopup = false;
+                  });
+                },
+                onSignIn: () {
+                  setState(() {
+                    _showSignUpPopup = false;
+                    _showSignInPopup = true;
+                  });
+                },
+              ),
+            ),
+          if (_showSignInPopup)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: SignInPopup(
+                onClose: () {
+                  setState(() {
+                    _showSignInPopup = false;
+                  });
+                },
+                onSignUp: () {
+                  setState(() {
+                    _showSignInPopup = false;
+                    _showSignUpPopup = true;
+                  });
+                },
               ),
             ),
         ],
@@ -130,6 +193,16 @@ class _AboutScreenState extends State<AboutScreen> {
           // Already here; just close the list
         } else if (text == 'Businesses') {
           Navigator.of(context).pushNamed('/business');
+        } else if (text == 'Explore') {
+          Navigator.of(context).pushNamed('/explore');
+        } else if (text == 'Sign in') {
+          setState(() {
+            _showSignInPopup = true;
+          });
+        } else if (text == 'Sign up') {
+          setState(() {
+            _showSignUpPopup = true;
+          });
         }
         setState(() {
           _isListUnfolded = false;

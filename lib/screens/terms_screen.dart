@@ -18,6 +18,11 @@ class _TermsScreenState extends State<TermsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompactNav = screenWidth < 720;
+    final bool isTightNav = screenWidth < 520;
+    final bool showExploreInNav = !isTightNav;
+    final bool showAuthInNav = !isCompactNav;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -74,15 +79,22 @@ class _TermsScreenState extends State<TermsScreen> {
               right: 10,
               child: Container(
                 width: 186,
-                height: 248,
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height - 140,
+                ),
                 color: const Color(0xFFEBE6EB),
-                child: Column(
-                  children: [
-                    _buildDropdownItem('About'),
-                    _buildDropdownItem('Businesses'),
-                    _buildDropdownItem('Terms of Service'),
-                    _buildDropdownItem('Privacy Policy'),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildDropdownItem('About'),
+                      _buildDropdownItem('Businesses'),
+                      _buildDropdownItem('Terms of Service'),
+                      _buildDropdownItem('Privacy Policy'),
+                      if (!showExploreInNav) _buildDropdownItem('Explore'),
+                      if (!showAuthInNav) _buildDropdownItem('Sign in'),
+                      if (!showAuthInNav) _buildDropdownItem('Sign up'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -150,9 +162,19 @@ class _TermsScreenState extends State<TermsScreen> {
             } else if (text == 'Privacy Policy') {
               Navigator.of(context).pushNamed('/privacy');
             } else if (text == 'About') {
-              Navigator.of(context).pushNamed('/');
+              Navigator.of(context).pushNamed('/about');
             } else if (text == 'Businesses') {
               Navigator.of(context).pushNamed('/business');
+            } else if (text == 'Explore') {
+              Navigator.of(context).pushNamed('/explore');
+            } else if (text == 'Sign in') {
+              setState(() {
+                _showSignInPopup = true;
+              });
+            } else if (text == 'Sign up') {
+              setState(() {
+                _showSignUpPopup = true;
+              });
             } else {
               debugPrint('Tapped: $text');
             }

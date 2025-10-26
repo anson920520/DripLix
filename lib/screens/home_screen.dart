@@ -26,7 +26,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
     final bool isLoggedIn = ref.watch(authProvider);
+    final bool isCompactNav = screenWidth < 720;
+    final bool isTightNav = screenWidth < 520;
+    final bool showExploreInNav = !isTightNav; // search bar hidden on home nav
+    final bool showAuthInNav = !isCompactNav;
     if (isLoggedIn) {
       // Redirect logged-in users to Explore as their home page.
       // Use addPostFrameCallback to avoid setState during build.
@@ -150,13 +156,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           children: [
                             // Header text container
                             Container(
-                              width: 800,
-                              height: 120,
+                              width: screenWidth < 840 ? screenWidth - 40 : 800,
+                              height: isMobile ? 100 : 120,
                               child: const Center(
                                 child: Text(
                                   'Fit The Look You Love',
                                   style: TextStyle(
-                                    fontSize: 48,
+                                    fontSize: 42,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     shadows: [
@@ -174,16 +180,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             const SizedBox(height: 20),
                             // Description text container
                             Container(
-                              width: 800,
-                              height: 120,
-                              child: const Center(
+                              width: screenWidth < 840 ? screenWidth - 40 : 800,
+                              height: isMobile ? 140 : 120,
+                              child: Center(
                                 child: Text(
                                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: isMobile ? 14 : 16,
                                     color: Colors.white,
                                     height: 1.6,
-                                    shadows: [
+                                    shadows: const [
                                       Shadow(
                                         offset: Offset(1, 1),
                                         blurRadius: 2,
@@ -233,15 +239,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               right: 10, // Align with the folded list button
               child: Container(
                 width: 186,
-                height: 248,
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height - 140,
+                ),
                 color: const Color(0xFFEBE6EB),
-                child: Column(
-                  children: [
-                    _buildDropdownItem('About'),
-                    _buildDropdownItem('Businesses'),
-                    _buildDropdownItem('Terms of Service'),
-                    _buildDropdownItem('Privacy Policy'),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildDropdownItem('About'),
+                      _buildDropdownItem('Businesses'),
+                      _buildDropdownItem('Terms of Service'),
+                      _buildDropdownItem('Privacy Policy'),
+                      if (!showExploreInNav) _buildDropdownItem('Explore'),
+                      if (!showAuthInNav) _buildDropdownItem('Sign in'),
+                      if (!showAuthInNav) _buildDropdownItem('Sign up'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -287,22 +300,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildNavButton(String imagePath, VoidCallback onTap) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
     return InkWell(
       onTap: onTap,
       child: Container(
-        width: 80,
-        height: 80,
+        width: isMobile ? 56 : 80,
+        height: isMobile ? 56 : 80,
         child: Image.asset(
           imagePath,
-          width: 80,
-          height: 80,
+          width: isMobile ? 56 : 80,
+          height: isMobile ? 56 : 80,
           errorBuilder: (context, error, stackTrace) {
             return Icon(
               imagePath.contains('forward')
                   ? Icons.chevron_right
                   : Icons.chevron_left,
               color: Colors.grey[400],
-              size: 40,
+              size: isMobile ? 32 : 40,
             );
           },
         ),
@@ -338,6 +353,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Navigator.of(context).pushNamed('/about');
             } else if (text == 'Businesses') {
               Navigator.of(context).pushNamed('/business');
+            } else if (text == 'Explore') {
+              Navigator.of(context).pushNamed('/explore');
+            } else if (text == 'Sign in') {
+              setState(() {
+                _showSignInPopup = true;
+              });
+            } else if (text == 'Sign up') {
+              setState(() {
+                _showSignUpPopup = true;
+              });
             } else {
               debugPrint('Tapped: $text');
             }
@@ -347,7 +372,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           },
           child: Container(
             width: 186,
-            height: 62, // 248 / 4 = 62 pixels per item
+            height: 62,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             decoration: BoxDecoration(
               color: isHovered

@@ -75,9 +75,44 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
 
                 // Decide which buttons can be shown inline
                 final bool showExplore = !widget.showSearchBar && !isTight;
-                final bool showAuth =
-                    !isCompact; // shows Sign in/Sign up when wide enough
-                final bool needsOverflowMenu = !(showExplore && showAuth);
+                final bool showAuth = !isCompact;
+                // Remove overflow menu entirely when search bar is shown (Explore)
+                final bool needsOverflowMenu =
+                    !(showExplore && showAuth) && !isCompact && !widget.showSearchBar;
+
+                // In Explore (searchBar shown) on compact screens, inline the search between logo and folded list
+                if (widget.showSearchBar && isCompact) {
+                  final double logoH = isTight ? 28 : 32;
+                  return Row(
+                    children: [
+                      Image.asset(
+                        'assets/images/navigation/Driplix Logo.png',
+                        height: logoH,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Text(
+                            'DripLix',
+                            style: TextStyle(
+                              fontSize: isTight ? 18 : 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      // Inline, responsive search bar
+                      Expanded(child: _buildInlineSearchBar(isTight: isTight)),
+                      const SizedBox(width: 8),
+                      _buildNavButton(
+                        '',
+                        widget.isListUnfolded
+                            ? 'assets/images/navigation/unfolded_list_icon.png'
+                            : 'assets/images/navigation/folded_list_icon.png',
+                        onTap: widget.onListToggle,
+                      ),
+                    ],
+                  );
+                }
 
                 return Row(
                   children: [
@@ -153,7 +188,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
               },
             ),
           ),
-          if (widget.showSearchBar) _buildCenteredSearchCard(),
+          if (widget.showSearchBar && screenWidth >= 720) _buildCenteredSearchCard(),
         ],
       ),
     );
@@ -246,9 +281,18 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
   }
 
   Widget _buildCenteredSearchCard() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompact = screenWidth < 720;
+    final bool isTight = screenWidth < 520;
+    final double cardWidth = screenWidth.clamp(0, double.infinity) - 32;
+    final double width = cardWidth < 280 ? 280 : (cardWidth > 720 ? 720 : cardWidth);
+    final double height = isTight ? 44 : (isCompact ? 52 : 56);
+    final double logoH = isTight ? 20 : (isCompact ? 24 : 28);
+    final double iconSize = isTight ? 20 : 24;
+    final double fontSize = isTight ? 14 : 16;
     return SizedBox(
-      width: 720,
-      height: 56,
+      width: width,
+      height: height,
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFECE6F0),
@@ -267,7 +311,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
             // Logo inside search bar (left)
             Image.asset(
               'assets/images/navigation/Searchbar/Logo.png',
-              height: 28,
+              height: logoH,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(Icons.store_mall_directory,
                     size: 24, color: Colors.black87);
@@ -278,15 +322,12 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
             Expanded(
               child: TextField(
                 controller: _searchController,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                ),
+                style: TextStyle(fontSize: fontSize, color: Colors.black),
                 decoration: InputDecoration(
                   isCollapsed: true,
                   border: InputBorder.none,
                   hintText: _activeHint,
-                  hintStyle: const TextStyle(color: Colors.black54),
+                  hintStyle: TextStyle(color: Colors.black54, fontSize: fontSize),
                 ),
               ),
             ),
@@ -298,13 +339,82 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                width: 40,
-                height: 40,
+                width: isTight ? 36 : 40,
+                height: isTight ? 36 : 40,
                 alignment: Alignment.center,
                 child: Image.asset(
                   'assets/images/navigation/Searchbar/Search.png',
-                  width: 24,
-                  height: 24,
+                  width: iconSize,
+                  height: iconSize,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.search, color: Colors.black);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInlineSearchBar({required bool isTight}) {
+    final double height = isTight ? 44 : 52;
+    final double logoH = isTight ? 20 : 24;
+    final double iconSize = isTight ? 20 : 24;
+    final double fontSize = isTight ? 14 : 16;
+    return SizedBox(
+      height: height,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFECE6F0),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            Image.asset(
+              'assets/images/navigation/Searchbar/Logo.png',
+              height: logoH,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.store_mall_directory,
+                    size: 20, color: Colors.black87);
+              },
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                style: TextStyle(fontSize: fontSize, color: Colors.black),
+                decoration: InputDecoration(
+                  isCollapsed: true,
+                  border: InputBorder.none,
+                  hintText: _activeHint,
+                  hintStyle:
+                      TextStyle(color: Colors.black54, fontSize: fontSize),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () {},
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: isTight ? 36 : 40,
+                height: isTight ? 36 : 40,
+                alignment: Alignment.center,
+                child: Image.asset(
+                  'assets/images/navigation/Searchbar/Search.png',
+                  width: iconSize,
+                  height: iconSize,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return const Icon(Icons.search, color: Colors.black);

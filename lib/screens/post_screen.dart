@@ -151,6 +151,9 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isLoggedIn = ref.watch(authProvider);
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompact = screenWidth < 720;
+    final bool isTight = screenWidth < 520;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -184,7 +187,10 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1370),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 16.0,
+                          horizontal: isTight ? 12.0 : (isCompact ? 16.0 : 0.0),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -381,8 +387,11 @@ class _PostScreenState extends ConsumerState<PostScreen> {
   }
 
   Widget _buildPostCard() {
-    // Compute display size for current image (bigger: up to 480x720)
-    const double maxImageWidth = 480;
+    // Compute display size for current image (responsive)
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompact = screenWidth < 720;
+    final bool isTight = screenWidth < 520;
+    final double maxImageWidth = isTight ? screenWidth - 24 : (isCompact ? 520 : 480);
     const double maxImageHeight = 720;
     Size? natural = (_currentIndex < _imageSizes.length)
         ? _imageSizes[_currentIndex]
@@ -396,9 +405,126 @@ class _PostScreenState extends ConsumerState<PostScreen> {
       displayW = natural.width * scale;
       displayH = natural.height * scale;
     }
+    final bool isMobileLayout = screenWidth < 720;
+    if (isMobileLayout) {
+      // Mobile: vertical stacking
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.black12, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage: const AssetImage(
+                        'assets/images/post/Generic avatar.png'),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _detail!.userName,
+                      style: GoogleFonts.notoSerif(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: AspectRatio(
+                  aspectRatio: 3 / 4,
+                  child: PageView.builder(
+                    itemCount: _detail!.imageUrls.length,
+                    onPageChanged: (int idx) {
+                      setState(() {
+                        _currentIndex = idx;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final String url = _detail!.imageUrls[index];
+                      return Image.asset(
+                        url,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child:
+                                  Icon(Icons.broken_image, color: Colors.black45),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ).letWithScrollConfig(),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List<Widget>.generate(
+                      _detail!.imageUrls.length, (int i) {
+                    final bool active = i == _currentIndex;
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: active ? 8 : 6,
+                      height: active ? 8 : 6,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Actions under the image
+              _buildActionsCard(compact: true),
+              const SizedBox(height: 12),
+              Text(
+                _detail!.title,
+                style: GoogleFonts.notoSerif(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _detail!.text,
+                style: const TextStyle(fontSize: 15, height: 1.6, color: Colors.black87),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final double dotsAndGap = 24; // dots + spacing below image
-    final double cardHeight =
-        (displayH + dotsAndGap) + 32; // include vertical padding 16*2
+    final double cardHeight = (displayH + dotsAndGap) + 32;
 
     return Container(
       width: 900,
@@ -603,7 +729,38 @@ class _PostScreenState extends ConsumerState<PostScreen> {
       builder: (context, constraints) {
         final double maxWidth = constraints.maxWidth;
         const double spacing = 16;
-        const double targetRowHeight = 260;
+        final bool isMobile = maxWidth < 520;
+        final double targetRowHeight = isMobile ? 160 : 320;
+
+        if (isMobile) {
+          // Simple two-column grid on mobile
+          final double tileWidth = (maxWidth - spacing) / 2;
+          final double tileHeight = 240;
+          final List<Widget> rows = <Widget>[];
+          for (int i = 0; i < _morePosts.length; i += 2) {
+            final ExplorePost left = _morePosts[i];
+            final ExplorePost? right = (i + 1) < _morePosts.length
+                ? _morePosts[i + 1]
+                : null;
+            rows.add(
+              Padding(
+                padding: EdgeInsets.only(
+                    bottom: (i + 2) >= _morePosts.length ? 0 : spacing),
+                child: Row(
+                  children: [
+                    _mobileExploreTile(left, tileWidth, tileHeight),
+                    SizedBox(width: spacing),
+                    if (right != null)
+                      _mobileExploreTile(right, tileWidth, tileHeight)
+                    else
+                      SizedBox(width: tileWidth, height: tileHeight),
+                  ],
+                ),
+              ),
+            );
+          }
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: rows);
+        }
 
         // Group into rows
         final List<List<ExplorePost>> rowsData = <List<ExplorePost>>[];
@@ -711,10 +868,38 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     );
   }
 
-  Widget _buildActionsCard() {
+  Widget _mobileExploreTile(ExplorePost post, double w, double h) {
     return SizedBox(
-      width: 481,
-      height: 54,
+      width: w,
+      height: h,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PostScreen(postId: post.id),
+            ),
+          );
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              image: DecorationImage(
+                image: AssetImage(post.imageUrl),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionsCard({bool compact = false}) {
+    return SizedBox(
+      width: compact ? double.infinity : 481,
+      height: compact ? 48 : 54,
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F5),
@@ -732,7 +917,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           children: [
             _assetIconButton(
               assetPath: 'assets/images/post/favorite.png',
-              size: 24,
+              size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
                 if (!isLoggedIn) {
@@ -750,23 +935,25 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             ),
             const SizedBox(width: 8),
             Text('$_likeCount',
-                style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    fontSize: compact ? 13 : 14,
+                    fontWeight: FontWeight.w600)),
             const SizedBox(width: 16),
             _assetIconButton(
               assetPath: 'assets/images/post/View.png',
-              size: 24,
+              size: compact ? 22 : 24,
               onTap: () {},
               tooltip: 'Views',
             ),
             const SizedBox(width: 8),
             Text('$_viewCount',
-                style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    fontSize: compact ? 13 : 14,
+                    fontWeight: FontWeight.w600)),
             const Spacer(),
             _assetIconButton(
               assetPath: 'assets/images/post/Share.png',
-              size: 24,
+              size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
                 if (!isLoggedIn) {
@@ -781,7 +968,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             const SizedBox(width: 12),
             _assetIconButton(
               assetPath: 'assets/images/post/bookmark.png',
-              size: 24,
+              size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
                 if (!isLoggedIn) {
@@ -799,7 +986,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             const SizedBox(width: 12),
             _assetIconButton(
               assetPath: 'assets/images/post/Wardrobe.png',
-              size: 24,
+              size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
                 if (!isLoggedIn) {

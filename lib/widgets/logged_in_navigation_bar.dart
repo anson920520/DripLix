@@ -151,8 +151,10 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
-              width: _isSearchExpanded ? min(screenWidth * 0.5, 520) : 0,
-              height: 56,
+              width: _isSearchExpanded
+                  ? min(screenWidth * 0.6, screenWidth < 520 ? 320 : 520)
+                  : 0,
+              height: screenWidth < 520 ? 44 : (screenWidth < 720 ? 52 : 56),
               decoration: BoxDecoration(
                 color: const Color(0xFFECE6F0),
                 borderRadius: BorderRadius.circular(16),
@@ -174,7 +176,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                         // Match navigation_bar.dart: left logo inside bar
                         Image.asset(
                           'assets/images/navigation/Searchbar/Logo.png',
-                          height: 28,
+                          height: screenWidth < 520 ? 20 : (screenWidth < 720 ? 24 : 28),
                           errorBuilder: (context, error, stackTrace) {
                             return const Icon(Icons.store_mall_directory,
                                 size: 24, color: Colors.black87);
@@ -184,15 +186,18 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                         Expanded(
                           child: TextField(
                             controller: _searchController,
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: TextStyle(
+                              fontSize: screenWidth < 520 ? 14 : 16,
                               color: Colors.black,
                             ),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               isCollapsed: true,
                               border: InputBorder.none,
                               hintText: 'Search looks, brands, items',
-                              hintStyle: TextStyle(color: Colors.black54),
+                              hintStyle: TextStyle(
+                                color: Colors.black54,
+                                fontSize: screenWidth < 520 ? 14 : 16,
+                              ),
                             ),
                           ),
                         ),
@@ -205,8 +210,8 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                             padding: const EdgeInsets.all(8.0),
                             child: Image.asset(
                               'assets/images/navigation/Searchbar/Search.png',
-                              width: 24,
-                              height: 24,
+                              width: screenWidth < 520 ? 20 : 24,
+                              height: screenWidth < 520 ? 20 : 24,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 return const Icon(Icons.search,

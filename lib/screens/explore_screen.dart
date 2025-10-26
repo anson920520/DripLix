@@ -161,6 +161,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isLoggedIn = ref.watch(authProvider);
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isCompactNav = screenWidth < 720;
+    final bool isTightNav = screenWidth < 520;
+    final bool showExploreInNav = false; // Explore tab hidden when search bar shows
+    final bool showAuthInNav = !isCompactNav;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -193,7 +198,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1370),
-                      child: Column(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTightNav
+                              ? 12
+                              : (isCompactNav ? 16 : 0),
+                        ),
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
@@ -202,7 +213,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             child: Text(
                               'Best OOTD',
                               style: GoogleFonts.notoSerif(
-                                fontSize: 34,
+                                fontSize: screenWidth < 480 ? 24 : 34,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black,
                               ),
@@ -211,7 +222,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           ),
                           SizedBox(
                             width: double.infinity,
-                            height: 180,
+                            height: screenWidth < 480 ? 140 : 180,
                             child: _buildOotdStrip(),
                           ),
                           if (_isLoadingOotd)
@@ -233,7 +244,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                   ? 'Following'
                                   : 'New drops For Your Fits',
                               style: GoogleFonts.notoSerif(
-                                fontSize: 34,
+                                fontSize: screenWidth < 480 ? 24 : 34,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black,
                               ),
@@ -283,6 +294,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           ),
                           const SizedBox(height: 24),
                         ],
+                        ),
                       ),
                     ),
                   ),
@@ -295,16 +307,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               top: 108,
               right: 10,
               child: Container(
-                width: 186,
-                height: 248,
+                width: isCompactNav ? 160 : 186,
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height - 140,
+                ),
                 color: const Color(0xFFEBE6EB),
-                child: Column(
-                  children: [
-                    _buildDropdownItem('About'),
-                    _buildDropdownItem('Businesses'),
-                    _buildDropdownItem('Terms of Service'),
-                    _buildDropdownItem('Privacy Policy'),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildDropdownItem('About', compact: isCompactNav),
+                      _buildDropdownItem('Businesses', compact: isCompactNav),
+                      _buildDropdownItem('Terms of Service', compact: isCompactNav),
+                      _buildDropdownItem('Privacy Policy', compact: isCompactNav),
+                      if (!showAuthInNav) _buildDropdownItem('Sign in', compact: isCompactNav),
+                      if (!showAuthInNav) _buildDropdownItem('Sign up', compact: isCompactNav),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -455,7 +473,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   // Removed unused _computeColumns
 
-  Widget _buildDropdownItem(String text) {
+  Widget _buildDropdownItem(String text, {bool compact = false}) {
     final bool isHovered = _hoveredItem == text;
 
     return MouseRegion(
@@ -489,9 +507,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             });
           },
           child: Container(
-            width: 186,
-            height: 62,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            width: compact ? 160 : 186,
+            height: compact ? 52 : 62,
+            padding: EdgeInsets.symmetric(
+                vertical: compact ? 12 : 16, horizontal: compact ? 14 : 20),
             decoration: BoxDecoration(
               color: isHovered
                   ? Colors.white.withOpacity(0.3)
@@ -511,7 +530,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: compact ? 14 : 16,
                   color: isHovered ? Colors.black87 : Colors.black,
                   fontWeight: isHovered ? FontWeight.w600 : FontWeight.w500,
                 ),
