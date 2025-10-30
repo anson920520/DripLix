@@ -263,7 +263,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
           ],
         ),
         if (isLoggedIn)
-          Positioned(left: 0, right: 0, bottom: 0, child: const LoggedInBottomNavBar(activeIndex: 1)),
+          const Positioned(left: 0, right: 0, bottom: 0, child: LoggedInBottomNavBar(activeIndex: 1)),
       ]),
     );
   }
@@ -673,9 +673,9 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: Colors.black12, width: 1),
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisSize: MainAxisSize.min,
-                                children: const [
+                                children: [
                                   Icon(Icons.filter_list, size: 18, color: Colors.black),
                                   SizedBox(width: 6),
                                   Text(
@@ -882,7 +882,7 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                 final double aspect = (item.width > 0 && item.height > 0)
                     ? item.width / item.height
                     : 1.0;
-                final double imageHeight =
+                const double imageHeight =
                     rowHeight - kWardrobeCardTextSectionHeight;
                 final double cardWidth = imageHeight * aspect;
                 return SizedBox(

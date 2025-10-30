@@ -863,8 +863,8 @@ class _KeywordArrow extends StatelessWidget {
         ),
         child: Image.asset(
           isLeft 
-            ? '/Users/alexhin0719/Downloads/DripLix/assets/images/homepage/button/chevron_backward.png'
-            : '/Users/alexhin0719/Downloads/DripLix/assets/images/homepage/button/chevron_forward.png',
+            ? 'assets/images/homepage/button/chevron_backward.png'
+            : 'assets/images/homepage/button/chevron_forward.png',
           width: 16,
           height: 16,
           errorBuilder: (context, error, stackTrace) {

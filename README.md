@@ -21,7 +21,7 @@ A picture feed app like Pinterest - cross-platform for iOS, web, and Android bui
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+svn checkout https://github.com/DripLix/DripLix.git
 cd DripLix
 ```
 
@@ -31,13 +31,27 @@ flutter pub get
 ```
 
 3. Run the app:
+For Chrome:
 ```bash
-# For web
-flutter run -d chrome
-
-# For mobile (with device connected)
+flutter run -d chrome --web-browser-flag="--disable-web-security"
+```
+For Microsoft Edge:
+```bash
+flutter run -d edge --web-browser-flag="--disable-web-security"
+```
+For Mozilla Firefox:
+```bash
+flutter run -d firefox --web-browser-flag="--disable-web-security"
+```
+For Apple Safari:
+```bash
+flutter run -d safari --web-browser-flag="--disable-web-security"
+```
+For Mobile (iOS, Android):
+```bash
 flutter run
 ```
+> Note: You can also directly click the run button in your IDE. For more information, please refer to the [Flutter Documentation](https://docs.flutter.dev/get-started/install/macos).
 
 ## Project Structure
 
@@ -55,6 +69,12 @@ assets/
     ├── logos/               # App logos and branding
     ├── navigation/          # Navigation bar icons
     └── icons/              # General app icons
+```
+
+## .env Environment Configuration
+Create a .env file in the root of the project and add the following variables, Otherwise this project will not work:
+```env
+FLOWEY_URL=http://64.176.227.70:9101/v1
 ```
 
 ## Design Theme
@@ -95,7 +115,7 @@ To add your own logos and icons:
 The web version is currently in development. To run on web:
 
 ```bash
-flutter run -d chrome
+flutter run -d chrome --web-browser-flag="--disable-web-security"
 ```
 
 ## Contributing
@@ -107,4 +127,4 @@ flutter run -d chrome
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the GNU General Public License v3.0.

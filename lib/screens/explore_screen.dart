@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 import '../widgets/navigation_bar.dart';
 import '../widgets/logged_in_navigation_bar.dart';
 import '../services/auth_state.dart';
 import '../widgets/signin_popup.dart';
 import '../widgets/signup_popup.dart';
-import '../services/explore_repository.dart';
+import '../presentation/viewmodel/explore_viewmodel.dart';
+import '../services/explore_repository.dart' as svc;
 import 'post_screen.dart';
 // Edit popup is only for Wardrobe; not used here.
 
@@ -28,20 +30,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   bool _autoFillingLastRow = false;
   int _lastAutoFillAtCount = -1;
 
-  final ExploreRepository _repository = const MockExploreRepository();
-
-  // Data state for fetched content
-  final List<OotdItem> _ootdItems = <OotdItem>[];
-  final List<ExplorePost> _feedPosts = <ExplorePost>[];
+  // Data state for OOTD（保持原实现，后续可迁移到ViewModel）
+  final List<svc.OotdItem> _ootdItems = <svc.OotdItem>[];
   bool _isLoadingOotd = false;
-  bool _isLoadingFeed = false;
-  bool _isLoadingFollowing = false;
   int _ootdPage = 1;
-  int _feedPage = 1;
-  int _followingPage = 1;
   static const int _ootdPageSize = 12;
-  static const int _feedPageSize = 30;
-  static const int _followingPageSize = 30;
+  final svc.ExploreRepository _mockRepo = const svc.MockExploreRepository();
 
   // No initState required for fixed sizes
   @override
@@ -54,27 +48,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Ensure data is fetched on page re-entry/rebuild if nothing is loaded
-    if (_ootdItems.isEmpty &&
-        _feedPosts.isEmpty &&
-        !_isLoadingFeed &&
-        !_isLoadingOotd) {
+    if (_ootdItems.isEmpty && !_isLoadingOotd) {
       _loadInitial();
     }
   }
 
   Future<void> _loadInitial() async {
-    final bool isLoggedIn = ref.watch(authProvider);
-    if (isLoggedIn) {
-      await Future.wait(<Future<void>>[
-        _loadMoreOotd(reset: true),
-        _loadMoreFollowing(reset: true),
-      ]);
-      return;
-    }
-    await Future.wait(<Future<void>>[
-      _loadMoreOotd(reset: true),
-      _loadMoreFeed(reset: true),
-    ]);
+    final bool isLoggedIn = ref.read(authProvider);
+    // feed通过ViewModel加载
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(exploreViewModelProvider.notifier).showFollowing(isLoggedIn);
+      ref.read(exploreViewModelProvider.notifier).refresh();
+    });
+    await _loadMoreOotd(reset: true);
   }
 
   Future<void> _loadMoreOotd({bool reset = false}) async {
@@ -87,7 +74,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       }
     });
     try {
-      final List<OotdItem> items = await _repository.fetchOotd(
+      final List<svc.OotdItem> items = await _mockRepo.fetchOotd(
         page: _ootdPage,
         pageSize: _ootdPageSize,
       );
@@ -104,67 +91,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
   }
 
-  Future<void> _loadMoreFeed({bool reset = false}) async {
-    if (_isLoadingFeed) return;
-    setState(() {
-      _isLoadingFeed = true;
-      if (reset) {
-        _feedPosts.clear();
-        _feedPage = 1;
-      }
-    });
-    try {
-      final List<ExplorePost> items = await _repository.fetchFeed(
-        page: _feedPage,
-        pageSize: _feedPageSize,
-      );
-      setState(() {
-        _feedPosts.addAll(items);
-        _feedPage += 1;
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingFeed = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadMoreFollowing({bool reset = false}) async {
-    if (_isLoadingFollowing) return;
-    setState(() {
-      _isLoadingFollowing = true;
-      if (reset) {
-        _feedPosts.clear();
-        _followingPage = 1;
-      }
-    });
-    try {
-      final List<ExplorePost> items = await _repository.fetchFollowing(
-        page: _followingPage,
-        pageSize: _followingPageSize,
-      );
-      setState(() {
-        _feedPosts.addAll(items);
-        _followingPage += 1;
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingFollowing = false;
-        });
-      }
-    }
-  }
+  // Feed通过ViewModel管理，移除本地加载函数
 
   @override
   Widget build(BuildContext context) {
     final bool isLoggedIn = ref.watch(authProvider);
+    final postsAsync = ref.watch(exploreViewModelProvider);
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isCompactNav = screenWidth < 720;
     final bool isTightNav = screenWidth < 520;
-    final bool showExploreInNav = false; // Explore tab hidden when search bar shows
+    const bool showExploreInNav = false; // Explore tab hidden when search bar shows
     final bool showAuthInNav = !isCompactNav;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -255,7 +191,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             builder: (context, constraints) {
                               final double availableWidth =
                                   constraints.maxWidth;
-                              return _buildJustifiedFeed(availableWidth);
+                              final List<svc.ExplorePost> posts = postsAsync.when(
+                                data: (data) => data,
+                                loading: () => <svc.ExplorePost>[],
+                                error: (_, __) => <svc.ExplorePost>[],
+                              );
+                              return _buildJustifiedFeed(availableWidth, posts);
                             },
                           ),
                           Center(
@@ -273,22 +214,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                   textStyle: const TextStyle(
                                       fontWeight: FontWeight.w600),
                                 ),
-                                onPressed: (isLoggedIn
-                                        ? _isLoadingFollowing
-                                        : _isLoadingFeed)
-                                    ? null
-                                    : () => (isLoggedIn
-                                        ? _loadMoreFollowing()
-                                        : _loadMoreFeed()),
-                                child: (isLoggedIn
-                                        ? _isLoadingFollowing
-                                        : _isLoadingFeed)
-                                    ? const SizedBox(
-                                        height: 16,
-                                        width: 16,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2))
-                                    : const Text('Load more'),
+                                onPressed: () => ref
+                                    .read(exploreViewModelProvider.notifier)
+                                    .loadMore(),
+                                child: const Text('Load more'),
                               ),
                             ),
                           ),
@@ -328,7 +257,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
           if (_showSignUpPopup)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: SignUpPopup(
                 onClose: () {
                   setState(() {
@@ -345,7 +274,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
           if (_showSignInPopup)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: SignInPopup(
                 onClose: () {
                   setState(() {
@@ -362,7 +291,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
           // Logged-in bottom nav on mobile
           if (isLoggedIn && isCompactNav)
-            Positioned(
+            const Positioned(
               left: 0,
               right: 0,
               bottom: 0,
@@ -413,7 +342,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     ),
                   );
                 }
-                final OotdItem item = _ootdItems[index];
+                final svc.OotdItem item = _ootdItems[index];
                 final double aspect = (item.width > 0 && item.height > 0)
                     ? (item.width / item.height)
                     : 1.3;
@@ -498,7 +427,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        transform: Matrix4.identity()..scale(isHovered ? 1.05 : 1.0),
+        transform: Matrix4.identity()..scaleByVector3(Vector3.all(isHovered ? 1.05 : 1.0)),
         child: InkWell(
           onTap: () {
             if (text == 'Terms of Service') {
@@ -521,13 +450,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 vertical: compact ? 12 : 16, horizontal: compact ? 14 : 20),
             decoration: BoxDecoration(
               color: isHovered
-                  ? Colors.white.withOpacity(0.3)
+                  ? Colors.white.withValues(alpha: 0.3)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(4.0),
               boxShadow: isHovered
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4.0,
                         offset: const Offset(0, 2),
                       ),
@@ -552,16 +481,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   }
 
   // Add helper to build justified feed rows
-  Widget _buildJustifiedFeed(double maxWidth) {
+  Widget _buildJustifiedFeed(double maxWidth, List<svc.ExplorePost> feedPosts) {
     const double spacing = 16;
     const double targetRowHeight =
         260; // base row height; rows will scale to fit width
     // First pass: group items into rows at target height
-    final List<List<ExplorePost>> rowsData = <List<ExplorePost>>[];
-    List<ExplorePost> currentRow = <ExplorePost>[];
+    final List<List<svc.ExplorePost>> rowsData = <List<svc.ExplorePost>>[];
+    List<svc.ExplorePost> currentRow = <svc.ExplorePost>[];
     double aspectSum = 0.0;
 
-    for (final ExplorePost post in _feedPosts) {
+    for (final svc.ExplorePost post in feedPosts) {
       final double aspect = (post.width > 0 && post.height > 0)
           ? (post.width / post.height)
           : 1.0;
@@ -573,7 +502,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
       if (prospectiveRowWidth > maxWidth && currentRow.isNotEmpty) {
         rowsData.add(currentRow);
-        currentRow = <ExplorePost>[];
+        currentRow = <svc.ExplorePost>[];
         aspectSum = 0.0;
       }
       currentRow.add(post);
@@ -584,13 +513,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     // If last row has less than 4 items, trigger auto-load (no borrowing) until filled
-    if (rowsData.isNotEmpty && rowsData.last.length < 4 && !_isLoadingFeed) {
-      if (_lastAutoFillAtCount != _feedPosts.length) {
-        _lastAutoFillAtCount = _feedPosts.length;
+    if (rowsData.isNotEmpty && rowsData.last.length < 4) {
+      if (_lastAutoFillAtCount != feedPosts.length) {
+        _lastAutoFillAtCount = feedPosts.length;
         _autoFillingLastRow = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            _loadMoreFeed();
+            ref.read(exploreViewModelProvider.notifier).loadMore();
           }
         });
       }
@@ -601,18 +530,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     // Render rows: justify all rows to fill width cleanly
     final List<Widget> rows = <Widget>[];
     for (int r = 0; r < rowsData.length; r++) {
-      final List<ExplorePost> row = rowsData[r];
+      final List<svc.ExplorePost> row = rowsData[r];
       if (row.isEmpty) continue;
       final int n = row.length;
       final double totalSpacing = spacing * (n - 1);
       double rowAspectSum = 0.0;
-      for (final ExplorePost p in row) {
+      for (final svc.ExplorePost p in row) {
         rowAspectSum +=
             (p.width > 0 && p.height > 0) ? (p.width / p.height) : 1.0;
       }
       final double rowHeight = (maxWidth - totalSpacing) / rowAspectSum;
       final List<Widget> tiles = <Widget>[];
-      for (final ExplorePost post in row) {
+      for (final svc.ExplorePost post in row) {
         final double aspect = (post.width > 0 && post.height > 0)
             ? (post.width / post.height)
             : 1.0;
@@ -688,7 +617,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         ...rows,
-        if (_autoFillingLastRow || _isLoadingFeed)
+        if (_autoFillingLastRow)
           const Padding(
             padding: EdgeInsets.only(top: 12.0),
             child: SizedBox(

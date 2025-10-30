@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+part 'explore_repository.g.dart';
 
 /// Simple models for Explore content. These can be expanded later by the backend dev.
 class OotdItem {
@@ -52,6 +54,7 @@ class PostDetail {
     required this.text,
   });
 }
+
 
 /// Repository interface to allow swapping implementations (mock vs real backend)
 abstract class ExploreRepository {
@@ -142,4 +145,10 @@ class MockExploreRepository implements ExploreRepository {
     final int end = (start + pageSize).clamp(0, items.length);
     return items.sublist(start, end);
   }
+}
+
+@riverpod
+ExploreRepository exploreRepository(Ref ref) {
+  // TODO: 当真实 API 可用时，替换为真实实现
+  return const MockExploreRepository();
 }

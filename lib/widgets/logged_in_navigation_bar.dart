@@ -10,6 +10,17 @@ class LoggedInNavigationBar extends StatefulWidget {
   State<LoggedInNavigationBar> createState() => _LoggedInNavigationBarState();
 }
 
+enum ConstantsRight {
+  tryon,
+  notifications,
+  profile,
+}
+enum ConstantsCenter {
+  home,
+  wardrobe,
+  bookmark,
+  marketplace,
+}
 class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
@@ -39,7 +50,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -153,7 +164,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                 boxShadow: _isSearchExpanded
                     ? [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
+                          color: Colors.black.withValues(alpha: 0.06),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -224,11 +235,11 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
   }
 
   Widget _buildCollapsedCenter() {
-    return PopupMenuButton<String>(
+    return PopupMenuButton<ConstantsCenter>(
       tooltip: 'Navigate',
       icon: const Icon(Icons.apps, color: Colors.black),
       onSelected: (value) {
-        if (value == 'home') {
+        if (value == ConstantsCenter.home) {
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/explore') {
             Navigator.of(context).pushReplacementNamed('/explore');
@@ -236,7 +247,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
           setState(() {
             _activeCenterIndex = 0;
           });
-        } else if (value == 'wardrobe') {
+        } else if (value == ConstantsCenter.wardrobe) {
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/wardrobe') {
             Navigator.of(context).pushReplacementNamed('/wardrobe');
@@ -244,11 +255,11 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
           setState(() {
             _activeCenterIndex = 1;
           });
-        } else if (value == 'bookmark') {
+        } else if (value == ConstantsCenter.bookmark) {
           setState(() {
             _activeCenterIndex = 2;
           });
-        } else if (value == 'marketplace') {
+        } else if (value == ConstantsCenter.marketplace) {
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/marketplace') {
             Navigator.of(context).pushReplacementNamed('/marketplace');
@@ -258,36 +269,36 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
           });
         }
       },
-      itemBuilder: (context) => const <PopupMenuEntry<String>>[
-        PopupMenuItem<String>(value: 'home', child: Text('Home')),
-        PopupMenuItem<String>(value: 'wardrobe', child: Text('Wardrobe')),
-        PopupMenuItem<String>(value: 'bookmark', child: Text('Bookmark')),
-        PopupMenuItem<String>(value: 'marketplace', child: Text('Marketplace')),
+      itemBuilder: (context) => const <PopupMenuEntry<ConstantsCenter>>[
+        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.home, child: Text('Home')),
+        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.wardrobe, child: Text('Wardrobe')),
+        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.bookmark, child: Text('Bookmark')),
+        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.marketplace, child: Text('Marketplace')),
       ],
     );
   }
 
   Widget _buildCollapsedRight() {
-    return PopupMenuButton<String>(
+    return PopupMenuButton<ConstantsRight>(
       tooltip: 'More',
       icon: const Icon(Icons.more_horiz, color: Colors.black),
       onSelected: (value) {
-        if (value == 'tryon') {
+        if (value == ConstantsRight.tryon) {
           // TODO: wire try on when available
-        } else if (value == 'notifications') {
+        } else if (value == ConstantsRight.notifications) {
           // TODO: wire notifications when available
-        } else if (value == 'profile') {
+        } else if (value == ConstantsRight.profile) {
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/profile') {
             Navigator.of(context).pushReplacementNamed('/profile');
           }
         }
       },
-      itemBuilder: (context) => const <PopupMenuEntry<String>>[
-        PopupMenuItem<String>(value: 'tryon', child: Text('Try on')),
-        PopupMenuItem<String>(
-            value: 'notifications', child: Text('Notifications')),
-        PopupMenuItem<String>(value: 'profile', child: Text('Profile')),
+      itemBuilder: (context) => const <PopupMenuEntry<ConstantsRight>>[
+        PopupMenuItem<ConstantsRight>(value: ConstantsRight.tryon, child: Text('Try on')),
+        PopupMenuItem<ConstantsRight>(
+            value: ConstantsRight.notifications, child: Text('Notifications')),
+        PopupMenuItem<ConstantsRight>(value: ConstantsRight.profile, child: Text('Profile')),
       ],
     );
   }
@@ -456,11 +467,11 @@ class LoggedInBottomNavBar extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
