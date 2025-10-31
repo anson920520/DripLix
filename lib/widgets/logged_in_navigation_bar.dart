@@ -234,74 +234,74 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
     );
   }
 
-  Widget _buildCollapsedCenter() {
-    return PopupMenuButton<ConstantsCenter>(
-      tooltip: 'Navigate',
-      icon: const Icon(Icons.apps, color: Colors.black),
-      onSelected: (value) {
-        if (value == ConstantsCenter.home) {
-          final String? current = ModalRoute.of(context)?.settings.name;
-          if (current != '/explore') {
-            Navigator.of(context).pushReplacementNamed('/explore');
-          }
-          setState(() {
-            _activeCenterIndex = 0;
-          });
-        } else if (value == ConstantsCenter.wardrobe) {
-          final String? current = ModalRoute.of(context)?.settings.name;
-          if (current != '/wardrobe') {
-            Navigator.of(context).pushReplacementNamed('/wardrobe');
-          }
-          setState(() {
-            _activeCenterIndex = 1;
-          });
-        } else if (value == ConstantsCenter.bookmark) {
-          setState(() {
-            _activeCenterIndex = 2;
-          });
-        } else if (value == ConstantsCenter.marketplace) {
-          final String? current = ModalRoute.of(context)?.settings.name;
-          if (current != '/marketplace') {
-            Navigator.of(context).pushReplacementNamed('/marketplace');
-          }
-          setState(() {
-            _activeCenterIndex = 3;
-          });
-        }
-      },
-      itemBuilder: (context) => const <PopupMenuEntry<ConstantsCenter>>[
-        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.home, child: Text('Home')),
-        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.wardrobe, child: Text('Wardrobe')),
-        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.bookmark, child: Text('Bookmark')),
-        PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.marketplace, child: Text('Marketplace')),
-      ],
-    );
-  }
+  // Widget _buildCollapsedCenter() {
+  //   return PopupMenuButton<ConstantsCenter>(
+  //     tooltip: 'Navigate',
+  //     icon: const Icon(Icons.apps, color: Colors.black),
+  //     onSelected: (value) {
+  //       if (value == ConstantsCenter.home) {
+  //         final String? current = ModalRoute.of(context)?.settings.name;
+  //         if (current != '/explore') {
+  //           Navigator.of(context).pushReplacementNamed('/explore');
+  //         }
+  //         setState(() {
+  //           _activeCenterIndex = 0;
+  //         });
+  //       } else if (value == ConstantsCenter.wardrobe) {
+  //         final String? current = ModalRoute.of(context)?.settings.name;
+  //         if (current != '/wardrobe') {
+  //           Navigator.of(context).pushReplacementNamed('/wardrobe');
+  //         }
+  //         setState(() {
+  //           _activeCenterIndex = 1;
+  //         });
+  //       } else if (value == ConstantsCenter.bookmark) {
+  //         setState(() {
+  //           _activeCenterIndex = 2;
+  //         });
+  //       } else if (value == ConstantsCenter.marketplace) {
+  //         final String? current = ModalRoute.of(context)?.settings.name;
+  //         if (current != '/marketplace') {
+  //           Navigator.of(context).pushReplacementNamed('/marketplace');
+  //         }
+  //         setState(() {
+  //           _activeCenterIndex = 3;
+  //         });
+  //       }
+  //     },
+  //     itemBuilder: (context) => const <PopupMenuEntry<ConstantsCenter>>[
+  //       PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.home, child: Text('Home')),
+  //       PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.wardrobe, child: Text('Wardrobe')),
+  //       PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.bookmark, child: Text('Bookmark')),
+  //       PopupMenuItem<ConstantsCenter>(value: ConstantsCenter.marketplace, child: Text('Marketplace')),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildCollapsedRight() {
-    return PopupMenuButton<ConstantsRight>(
-      tooltip: 'More',
-      icon: const Icon(Icons.more_horiz, color: Colors.black),
-      onSelected: (value) {
-        if (value == ConstantsRight.tryon) {
-          // TODO: wire try on when available
-        } else if (value == ConstantsRight.notifications) {
-          // TODO: wire notifications when available
-        } else if (value == ConstantsRight.profile) {
-          final String? current = ModalRoute.of(context)?.settings.name;
-          if (current != '/profile') {
-            Navigator.of(context).pushReplacementNamed('/profile');
-          }
-        }
-      },
-      itemBuilder: (context) => const <PopupMenuEntry<ConstantsRight>>[
-        PopupMenuItem<ConstantsRight>(value: ConstantsRight.tryon, child: Text('Try on')),
-        PopupMenuItem<ConstantsRight>(
-            value: ConstantsRight.notifications, child: Text('Notifications')),
-        PopupMenuItem<ConstantsRight>(value: ConstantsRight.profile, child: Text('Profile')),
-      ],
-    );
-  }
+  // Widget _buildCollapsedRight() {
+  //   return PopupMenuButton<ConstantsRight>(
+  //     tooltip: 'More',
+  //     icon: const Icon(Icons.more_horiz, color: Colors.black),
+  //     onSelected: (value) {
+  //       if (value == ConstantsRight.tryon) {
+  //         // TODO: wire try on when available
+  //       } else if (value == ConstantsRight.notifications) {
+  //         // TODO: wire notifications when available
+  //       } else if (value == ConstantsRight.profile) {
+  //         final String? current = ModalRoute.of(context)?.settings.name;
+  //         if (current != '/profile') {
+  //           Navigator.of(context).pushReplacementNamed('/profile');
+  //         }
+  //       }
+  //     },
+  //     itemBuilder: (context) => const <PopupMenuEntry<ConstantsRight>>[
+  //       PopupMenuItem<ConstantsRight>(value: ConstantsRight.tryon, child: Text('Try on')),
+  //       PopupMenuItem<ConstantsRight>(
+  //           value: ConstantsRight.notifications, child: Text('Notifications')),
+  //       PopupMenuItem<ConstantsRight>(value: ConstantsRight.profile, child: Text('Profile')),
+  //     ],
+  //   );
+  // }
 
   Widget _buildCenterButtons() {
     return Row(
@@ -420,6 +420,9 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/profile') {
             Navigator.of(context).pushReplacementNamed('/profile');
+            // showDialog(context: context, builder: (context) => UserProfileDropdown(asset: 'assets/images/navigation/Generic avatar (1).png', tooltip: 'Profile', onTap: () {
+            //   Navigator.of(context).pushReplacementNamed('/profile');
+            // }));
           }
         }),
       ],
@@ -523,6 +526,28 @@ class LoggedInBottomNavBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class UserProfileDropdown extends StatelessWidget {
+  final String asset;
+  final String tooltip;
+  final VoidCallback? onTap;
+  const UserProfileDropdown({super.key, required this.asset, required this.tooltip, this.onTap});
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<ConstantsRight>(
+      tooltip: 'More',
+      icon: const Icon(Icons.more_horiz, color: Colors.black),
+      itemBuilder: (context) => const <PopupMenuEntry<ConstantsRight>>[
+        PopupMenuItem<ConstantsRight>(value: ConstantsRight.tryon, child: Text('Drip Coin')),
+        PopupMenuItem<ConstantsRight>(
+            value: ConstantsRight.notifications, child: Text('Friends')),
+        PopupMenuItem<ConstantsRight>(value: ConstantsRight.profile, child: Text('Follows')),
+        PopupMenuItem<ConstantsRight>(value: ConstantsRight.profile, child: Text('Settings')),
+        PopupMenuItem<ConstantsRight>(value: ConstantsRight.profile, child: Text('Support Center')),
+      ],
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../domain/explore_usecase.dart';
 import '../../services/explore_repository.dart' as svc;
@@ -7,22 +7,26 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'explore_viewmodel.g.dart';
 
 @riverpod
-class ExploreViewModel extends AsyncNotifier<List<svc.ExplorePost>> {
+class ExploreViewModel extends _$ExploreViewModel {
+
   int _feedPage = 1;
   int _followingPage = 1;
   static const int _pageSize = 30;
   bool _isFollowing = false;
+  bool _isFetching = false;
 
   @override
-  Future<List<svc.ExplorePost>> build() async {
+  FutureOr<List<svc.ExplorePost>> build() async {
     return <svc.ExplorePost>[];
   }
-
+  
   void showFollowing(bool following) {
     _isFollowing = following;
   }
 
   Future<void> refresh() async {
+    if (_isFetching) return;
+    _isFetching = true;
     state = const AsyncLoading();
     final ExploreUseCase useCase = ref.read(exploreUseCaseProvider);
     try {
@@ -39,12 +43,18 @@ class ExploreViewModel extends AsyncNotifier<List<svc.ExplorePost>> {
       state = AsyncData(items);
     } catch (e, st) {
       state = AsyncError<List<svc.ExplorePost>>(e, st);
+    } finally {
+      _isFetching = false;
     }
   }
 
   Future<void> loadMore() async {
+    debugPrint('loadMore');
+    debugPrint(state.value?.toString());
+    if (_isFetching) return;
+    _isFetching = true;
     final ExploreUseCase useCase = ref.read(exploreUseCaseProvider);
-    final List<svc.ExplorePost> current = state.value ?? <svc.ExplorePost>[];
+    final List<svc.ExplorePost> current = List<svc.ExplorePost>.of(state.value ?? <svc.ExplorePost>[]);
     try {
       final List<svc.ExplorePost> items = _isFollowing
           ? await useCase.fetchFollowing(page: _followingPage, pageSize: _pageSize)
@@ -57,6 +67,8 @@ class ExploreViewModel extends AsyncNotifier<List<svc.ExplorePost>> {
       state = AsyncData(<svc.ExplorePost>[...current, ...items]);
     } catch (e, st) {
       state = AsyncError<List<svc.ExplorePost>>(e, st);
+    } finally {
+      _isFetching = false;
     }
   }
 }

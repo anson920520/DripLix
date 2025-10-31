@@ -24,7 +24,7 @@ class FloweyService {
         onRequest: (options, handler) async {
           final String? token = await storage.readAccessToken();
           if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer ' + token;
+            options.headers['Authorization'] = 'Bearer $token';
           }
           handler.next(options);
         },

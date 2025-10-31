@@ -57,52 +57,91 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final bool isCompact = constraints.maxWidth < 720;
-                final bool isTight = constraints.maxWidth < 520;
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool isCompact = constraints.maxWidth < 720;
+            final bool isTight = constraints.maxWidth < 520;
 
-                // Decide which buttons can be shown inline
-                final bool showExplore = !widget.showSearchBar && !isTight;
-                final bool showAuth = !isCompact;
-                // Remove overflow menu entirely when search bar is shown (Explore)
-                final bool needsOverflowMenu =
-                    !(showExplore && showAuth) && !isCompact && !widget.showSearchBar;
+            // Decide which buttons can be shown inline
+            final bool showExplore = !widget.showSearchBar && !isTight;
+            final bool showAuth = !isCompact;
+            // Remove overflow menu entirely when search bar is shown (Explore)
+            final bool needsOverflowMenu =
+                !(showExplore && showAuth) && !isCompact && !widget.showSearchBar;
 
-                // In Explore (searchBar shown) on compact screens, inline the search between logo and folded list
-                if (widget.showSearchBar && isCompact) {
-                  final double logoH = isTight ? 28 : 32;
-                  return Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/navigation/Driplix Logo.png',
-                        height: logoH,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Text(
-                            'DripLix',
-                            style: TextStyle(
-                              fontSize: isTight ? 18 : 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          );
-                        },
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Logo on the left
+                Image.asset(
+                  'assets/images/navigation/Driplix Logo.png',
+                  height: isCompact ? 32 : 40,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Text(
+                      'DripLix',
+                      style: TextStyle(
+                        fontSize: isCompact ? 20 : 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
-                      const SizedBox(width: 8),
-                      // Inline, responsive search bar
-                      Expanded(child: _buildInlineSearchBar(isTight: isTight)),
-                      const SizedBox(width: 8),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+                
+                // SearchBar in the middle (conditionally shown)
+                if (widget.showSearchBar)
+                  Expanded(
+                    child: isCompact
+                        // Inline search bar for compact screens
+                        ? _buildInlineSearchBar(isTight: isTight)
+                        // Centered search card for larger screens
+                        : _buildCenteredSearchCard(),
+                  ),
+                
+                if (!widget.showSearchBar) const Spacer(),
+
+                
+                // Spacing between search bar and buttons when search bar is shown
+                if (widget.showSearchBar) const SizedBox(width: 8),
+                
+                // Navigation buttons on the right
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (showExplore)
+                        _buildNavButton(
+                          '',
+                          'assets/images/navigation/Explore_tab.png',
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/explore');
+                          },
+                        ),
+                      if (showExplore) const SizedBox(width: 8),
+                      if (showAuth)
+                        _buildNavButton(
+                          '',
+                          'assets/images/navigation/Sign_in_tab.png',
+                          onTap: widget.onSignIn,
+                        ),
+                      if (showAuth) const SizedBox(width: 8),
+                      if (showAuth)
+                        _buildNavButton(
+                          '',
+                          'assets/images/navigation/Sign_up_tab.png',
+                          onTap: widget.onSignUp,
+                        ),
+                      if (showAuth) const SizedBox(width: 8),
                       _buildNavButton(
                         '',
                         widget.isListUnfolded
@@ -110,86 +149,20 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                             : 'assets/images/navigation/folded_list_icon.png',
                         onTap: widget.onListToggle,
                       ),
-                    ],
-                  );
-                }
-
-                return Row(
-                  children: [
-                    // Logo on the left
-                    Image.asset(
-                      'assets/images/navigation/Driplix Logo.png',
-                      height: isCompact ? 32 : 40,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Text(
-                          'DripLix',
-                          style: TextStyle(
-                            fontSize: isCompact ? 20 : 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        );
-                      },
-                    ),
-                    const Spacer(),
-                    // Navigation buttons on the right
-                    Flexible(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (showExplore)
-                                _buildNavButton(
-                                  '',
-                                  'assets/images/navigation/Explore_tab.png',
-                                  onTap: () {
-                                    Navigator.of(context).pushNamed('/explore');
-                                  },
-                                ),
-                              if (showExplore) const SizedBox(width: 8),
-                              if (showAuth)
-                                _buildNavButton(
-                                  '',
-                                  'assets/images/navigation/Sign_in_tab.png',
-                                  onTap: widget.onSignIn,
-                                ),
-                              if (showAuth) const SizedBox(width: 8),
-                              if (showAuth)
-                                _buildNavButton(
-                                  '',
-                                  'assets/images/navigation/Sign_up_tab.png',
-                                  onTap: widget.onSignUp,
-                                ),
-                              if (showAuth) const SizedBox(width: 8),
-                              _buildNavButton(
-                                '',
-                                widget.isListUnfolded
-                                    ? 'assets/images/navigation/unfolded_list_icon.png'
-                                    : 'assets/images/navigation/folded_list_icon.png',
-                                onTap: widget.onListToggle,
-                              ),
-                              if (needsOverflowMenu) const SizedBox(width: 8),
-                              if (needsOverflowMenu)
-                                _buildOverflowMenu(
-                                  showExploreInMenu: !showExplore,
-                                  showSignInInMenu: !showAuth,
-                                  showSignUpInMenu: !showAuth,
-                                ),
-                            ],
-                          ),
+                      if (needsOverflowMenu) const SizedBox(width: 8),
+                      if (needsOverflowMenu)
+                        _buildOverflowMenu(
+                          showExploreInMenu: !showExplore,
+                          showSignInInMenu: !showAuth,
+                          showSignUpInMenu: !showAuth,
                         ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          if (widget.showSearchBar && screenWidth >= 720) _buildCenteredSearchCard(),
-        ],
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -284,14 +257,11 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isCompact = screenWidth < 720;
     final bool isTight = screenWidth < 520;
-    final double cardWidth = screenWidth.clamp(0, double.infinity) - 32;
-    final double width = cardWidth < 280 ? 280 : (cardWidth > 720 ? 720 : cardWidth);
     final double height = isTight ? 44 : (isCompact ? 52 : 56);
     final double logoH = isTight ? 20 : (isCompact ? 24 : 28);
     final double iconSize = isTight ? 20 : 24;
     final double fontSize = isTight ? 14 : 16;
     return SizedBox(
-      width: width,
       height: height,
       child: Container(
         decoration: BoxDecoration(
@@ -299,7 +269,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -372,7 +342,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

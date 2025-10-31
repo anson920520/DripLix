@@ -5,6 +5,7 @@ import '../widgets/logged_in_navigation_bar.dart';
 import '../services/auth_state.dart';
 import '../widgets/signup_popup.dart';
 import '../widgets/signin_popup.dart';
+import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -100,9 +101,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withOpacity(0.3),
-                              Colors.black.withOpacity(0.1),
-                              Colors.black.withOpacity(0.3),
+                              Colors.black.withValues(alpha: 0.3),
+                              Colors.black.withValues(alpha: 0.1),
+                              Colors.black.withValues(alpha: 0.3),
                             ],
                             stops: const [0.0, 0.5, 1.0],
                           ),
@@ -155,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // Header text container
-                            Container(
+                            SizedBox(
                               width: screenWidth < 840 ? screenWidth - 40 : 800,
                               height: isMobile ? 100 : 120,
                               child: const Center(
@@ -179,7 +180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             const SizedBox(height: 20),
                             // Description text container
-                            Container(
+                            SizedBox(
                               width: screenWidth < 840 ? screenWidth - 40 : 800,
                               height: isMobile ? 140 : 120,
                               child: Center(
@@ -221,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               shape: BoxShape.circle,
                               color: _currentIndex == entry.key
                                   ? Colors.white
-                                  : Colors.white.withOpacity(0.5),
+                                  : Colors.white.withValues(alpha: 0.5),
                             ),
                           );
                         }).toList(),
@@ -262,7 +263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Sign up popup overlay
           if (_showSignUpPopup)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: SignUpPopup(
                 onClose: () {
                   setState(() {
@@ -279,7 +280,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           if (_showSignInPopup)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: SignInPopup(
                 onClose: () {
                   setState(() {
@@ -304,7 +305,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool isMobile = screenWidth < 600;
     return InkWell(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         width: isMobile ? 56 : 80,
         height: isMobile ? 56 : 80,
         child: Image.asset(
@@ -342,7 +343,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        transform: Matrix4.identity()..scale(isHovered ? 1.05 : 1.0),
+        transform: Matrix4.identity()..scaleByVector3(Vector3.all(isHovered ? 1.05 : 1.0)),
         child: InkWell(
           onTap: () {
             if (text == 'Terms of Service') {
@@ -376,13 +377,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             decoration: BoxDecoration(
               color: isHovered
-                  ? Colors.white.withOpacity(0.3)
+                  ? Colors.white.withValues(alpha: 0.3)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(4.0),
               boxShadow: isHovered
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4.0,
                         offset: const Offset(0, 2),
                       ),

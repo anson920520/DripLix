@@ -8,7 +8,7 @@ Use classes to parse JSON and data objects in the service layer. For Literal obj
 
 The Service layer should do nothing except converting the original JSON format into Flutter classes. The Repository layer needs to convert the data obtained from the Service layer (which may be methods in multiple Services) into a format that can be DIRECTLY used (without any other conversion) by the ViewModel.
 
-DO NOT USE DYNAMIC TYPE IN ANY FLUTTER CLASSES!!!!!! If you actually need to process multi types in API responses, you may use Union types to keep type safety.
+DO NOT USE DYNAMIC TYPE IN ANY FLUTTER CLASSES!!!!!! If you actually need to process multi types in API responses, consider using Union types to keep type safety.
 
 Repository objects instantiated should be located in the MultiProvider at the top level of the application tree to implement a global singleton pattern. It is STRICTLY FORBIDDEN to instantiate the Repository class anywhere else.
 

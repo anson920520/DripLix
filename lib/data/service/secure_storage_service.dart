@@ -28,6 +28,6 @@ class SecureStorageService {
 @riverpod
 SecureStorageService secureStorageService(Ref ref) {
   const FlutterSecureStorage storage = FlutterSecureStorage();
-  return SecureStorageService(storage);
+  return const SecureStorageService(storage);
 }
 

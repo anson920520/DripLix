@@ -214,9 +214,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                   textStyle: const TextStyle(
                                       fontWeight: FontWeight.w600),
                                 ),
-                                onPressed: () => ref
-                                    .read(exploreViewModelProvider.notifier)
-                                    .loadMore(),
+                                onPressed: postsAsync.isLoading
+                                    ? null
+                                    : () => ref
+                                        .read(exploreViewModelProvider.notifier)
+                                        .loadMore(),
                                 child: const Text('Load more'),
                               ),
                             ),
