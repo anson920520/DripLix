@@ -27,11 +27,11 @@ class ExploreViewModel extends _$ExploreViewModel {
   Future<void> refresh() async {
     if (_isFetching) return;
     _isFetching = true;
-    state = const AsyncLoading();
     final ExploreUseCase useCase = ref.read(exploreUseCaseProvider);
     try {
       _feedPage = 1;
       _followingPage = 1;
+      state = const AsyncLoading();
       final List<svc.ExplorePost> items = _isFollowing
           ? await useCase.fetchFollowing(page: _followingPage, pageSize: _pageSize)
           : await useCase.fetchFeed(page: _feedPage, pageSize: _pageSize);
@@ -49,23 +49,43 @@ class ExploreViewModel extends _$ExploreViewModel {
   }
 
   Future<void> loadMore() async {
-    debugPrint('loadMore');
-    debugPrint(state.value?.toString());
     if (_isFetching) return;
+    
+    // 如果当前状态不是 AsyncData，则无法加载更多
+    final currentValue = state.maybeWhen(
+      data: (data) => data,
+      orElse: () => null,
+    );
+    
+    if (currentValue == null) {
+      debugPrint('loadMore: current state is not AsyncData, skipping');
+      return;
+    }
+    
     _isFetching = true;
     final ExploreUseCase useCase = ref.read(exploreUseCaseProvider);
-    final List<svc.ExplorePost> current = List<svc.ExplorePost>.of(state.value ?? <svc.ExplorePost>[]);
+    final List<svc.ExplorePost> current = List<svc.ExplorePost>.of(currentValue);
+    
+    debugPrint('loadMore: current count=${current.length}, page=${_isFollowing ? _followingPage : _feedPage}');
+    
     try {
       final List<svc.ExplorePost> items = _isFollowing
           ? await useCase.fetchFollowing(page: _followingPage, pageSize: _pageSize)
           : await useCase.fetchFeed(page: _feedPage, pageSize: _pageSize);
+      
+      debugPrint('loadMore: fetched ${items.length} items');
+      
       if (_isFollowing) {
         _followingPage += 1;
       } else {
         _feedPage += 1;
       }
-      state = AsyncData(<svc.ExplorePost>[...current, ...items]);
+      
+      final newList = <svc.ExplorePost>[...current, ...items];
+      debugPrint('loadMore: new total count=${newList.length}');
+      state = AsyncData(newList);
     } catch (e, st) {
+      debugPrint('loadMore: error=$e');
       state = AsyncError<List<svc.ExplorePost>>(e, st);
     } finally {
       _isFetching = false;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomNavigationBar extends StatefulWidget {
   final bool isListUnfolded;
@@ -81,12 +82,26 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Logo on the left
-                Image.asset(
-                  'assets/images/navigation/Driplix Logo.png',
+                // Image.asset(
+                //   'assets/images/navigation/Driplix Logo.png',
+                //   height: isCompact ? 32 : 40,
+                //   errorBuilder: (context, error, stackTrace) {
+                //     return Text(
+                //       'DripLix',
+                //       style: TextStyle(
+                //         fontSize: isCompact ? 20 : 24,
+                //         fontWeight: FontWeight.bold,
+                //         color: Colors.black,
+                //       ),
+                //     );
+                //   },
+                // ),
+                SvgPicture.asset(
+                  'assets/images/navigation/Driplix Logo.svg',
                   height: isCompact ? 32 : 40,
                   errorBuilder: (context, error, stackTrace) {
                     return Text(
-                      'DripLix',
+                      'DripLix Logo',
                       style: TextStyle(
                         fontSize: isCompact ? 20 : 24,
                         fontWeight: FontWeight.bold,

@@ -1,6 +1,5 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoggedInNavigationBar extends StatefulWidget {
   final int initialActiveIndex; // 0=Home,1=Wardrobe,2=Bookmark,3=Shop
@@ -43,43 +42,67 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
 
-    return Container(
-      width: screenWidth,
-      height: 108,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final bool isMobile = constraints.maxWidth < 720;
-                final bool tightCenter = constraints.maxWidth < 880;
-                return Row(
-                  children: [
-                    // Left cluster: Logo + Search button
-                    SizedBox(
-                      height: 56,
-                      child: Row(
+    return GestureDetector(
+      onTap: _isSearchExpanded
+          ? () {
+              setState(() {
+                _isSearchExpanded = false;
+              });
+            }
+          : null,
+      behavior: HitTestBehavior.translucent,
+      child: Container(
+        width: screenWidth,
+        height: 108,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final bool isMobile = constraints.maxWidth < 720;
+              final bool tightCenter = constraints.maxWidth < 880;
+              
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Base Row layout with all elements always visible
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Left cluster: Logo + Search button
+                      Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Driplix logo (covered when search expands)
+                          // Driplix logo (hidden when search expands)
                           Opacity(
                             opacity: _isSearchExpanded ? 0.0 : 1.0,
                             child: IgnorePointer(
                               ignoring: _isSearchExpanded,
-                              child: Image.asset(
-                                'assets/images/navigation/Driplix Logo.png',
+                              // child: Image.asset(
+                              //   'assets/images/navigation/Driplix Logo.png',
+                              //   height: 40,
+                              //   errorBuilder: (context, error, stackTrace) {
+                              //     return const Text(
+                              //       'DripLix',
+                              //       style: TextStyle(
+                              //         fontSize: 24,
+                              //         fontWeight: FontWeight.bold,
+                              //         color: Colors.black,
+                              //       ),
+                              //     );
+                              //   },
+                              // ),
+                              child: SvgPicture.asset(
+                                'assets/images/navigation/Driplix Logo.svg',
                                 height: 40,
                                 errorBuilder: (context, error, stackTrace) {
                                   return const Text(
@@ -94,6 +117,7 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                               ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           SizedBox(
                             width: 59,
                             height: 50,
@@ -120,116 +144,111 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                           ),
                         ],
                       ),
-                    ),
+                      
+                      const Spacer(),
 
-                    const Spacer(),
+                      // Center cluster: hidden on mobile (moved to bottom nav)
+                      if (!tightCenter && !isMobile) _buildCenterButtons(),
 
-                    // Center cluster: hidden on mobile (moved to bottom nav)
-                    if (!tightCenter && !isMobile) _buildCenterButtons(),
+                      const Spacer(),
 
-                    const Spacer(),
-
-                    // Right cluster: always show, compact on mobile
-                    _buildRightButtons(compact: isMobile),
-                  ],
-                );
-              },
-            ),
-          ),
-
-          // Search overlay on the leftmost, covering the logo area
-          if (_isSearchExpanded)
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  setState(() {
-                    _isSearchExpanded = false;
-                  });
-                },
-              ),
-            ),
-          Positioned(
-            left: 16,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              width: _isSearchExpanded
-                  ? min(screenWidth * 0.6, screenWidth < 520 ? 320 : 520)
-                  : 0,
-              height: screenWidth < 520 ? 44 : (screenWidth < 720 ? 52 : 56),
-              decoration: BoxDecoration(
-                color: const Color(0xFFECE6F0),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: _isSearchExpanded
-                    ? [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: _isSearchExpanded
-                  ? Row(
-                      children: [
-                        const SizedBox(width: 12),
-                        // Match navigation_bar.dart: left logo inside bar
-                        Image.asset(
-                          'assets/images/navigation/Searchbar/Logo.png',
-                          height: screenWidth < 520 ? 20 : (screenWidth < 720 ? 24 : 28),
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.store_mall_directory,
-                                size: 24, color: Colors.black87);
-                          },
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            style: TextStyle(
-                              fontSize: screenWidth < 520 ? 14 : 16,
-                              color: Colors.black,
-                            ),
-                            decoration: InputDecoration(
-                              isCollapsed: true,
-                              border: InputBorder.none,
-                              hintText: 'Search looks, brands, items',
-                              hintStyle: TextStyle(
-                                color: Colors.black54,
-                                fontSize: screenWidth < 520 ? 14 : 16,
+                      // Right cluster: always show, compact on mobile
+                      _buildRightButtons(compact: isMobile),
+                    ],
+                  ),
+                  
+                  // SearchBar overlay (positioned on the left, covering logo when expanded)
+                  if (_isSearchExpanded)
+                    Positioned(
+                      left: 0,
+                      top: null,
+                      bottom: null,
+                      child: GestureDetector(
+                        onTap: () {
+                          // Prevent tap from closing search bar when clicking inside
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutCubic,
+                          width: screenWidth < 520 
+                              ? 320 
+                              : (screenWidth * 0.6).clamp(0.0, 520.0),
+                          height: screenWidth < 520 ? 44 : (screenWidth < 720 ? 52 : 56),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFECE6F0),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
-                            ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 12),
+                              // Logo inside search bar
+                              Image.asset(
+                                'assets/images/navigation/Searchbar/Logo.png',
+                                height: screenWidth < 520 ? 20 : (screenWidth < 720 ? 24 : 28),
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.store_mall_directory,
+                                      size: 24, color: Colors.black87);
+                                },
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  controller: _searchController,
+                                  autofocus: true,
+                                  style: TextStyle(
+                                    fontSize: screenWidth < 520 ? 14 : 16,
+                                    color: Colors.black,
+                                  ),
+                                  decoration: InputDecoration(
+                                    isCollapsed: true,
+                                    border: InputBorder.none,
+                                    hintText: 'Search looks, brands, items',
+                                    hintStyle: TextStyle(
+                                      color: Colors.black54,
+                                      fontSize: screenWidth < 520 ? 14 : 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  // No-op for now; search behavior to be implemented later.
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.asset(
+                                    'assets/images/navigation/Searchbar/Search.png',
+                                    width: screenWidth < 520 ? 20 : 24,
+                                    height: screenWidth < 520 ? 20 : 24,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.search,
+                                          color: Colors.black);
+                                    },
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
                           ),
                         ),
-                        InkWell(
-                          onTap: () {
-                            // No-op for now; search behavior to be implemented later.
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.asset(
-                              'assets/images/navigation/Searchbar/Search.png',
-                              width: screenWidth < 520 ? 20 : 24,
-                              height: screenWidth < 520 ? 20 : 24,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.search,
-                                    color: Colors.black);
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                    )
-                  : null,
-            ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }
@@ -309,25 +328,25 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
       children: [
         _centerButton(
           index: 0,
-          asset: 'assets/images/navigation/home_icon.png',
+          asset: 'assets/images/navigation/home_icon.svg',
           tooltip: 'Home',
         ),
         const SizedBox(width: 40),
         _centerButton(
           index: 1,
-          asset: 'assets/images/navigation/Wardrobe_icon.png',
+          asset: 'assets/images/navigation/Wardrobe_icon.svg',
           tooltip: 'Wardrobe',
         ),
         const SizedBox(width: 40),
         _centerButton(
           index: 2,
-          asset: 'assets/images/navigation/book_icon.png',
+          asset: 'assets/images/navigation/book_icon.svg',
           tooltip: 'Bookmark',
         ),
         const SizedBox(width: 40),
         _centerButton(
           index: 3,
-          asset: 'assets/images/navigation/shop_icon.png',
+          asset: 'assets/images/navigation/shop_icon.svg',
           tooltip: 'Marketplace',
         ),
       ],
@@ -337,10 +356,11 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
   Widget _centerButton({
     required int index,
     required String asset,
+    String? selectedAsset,
     String? tooltip,
   }) {
     final bool isActive = _activeCenterIndex == index;
-    final Widget image = Image.asset(
+    final Widget image = SvgPicture.asset(
       asset,
       width: 40,
       height: 40,
@@ -409,13 +429,14 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _iconButton('assets/images/navigation/try_on.png',
-            size: compact ? 24 : 28, tooltip: 'Try on'),
+        _iconButton('assets/images/navigation/try_on.svg',
+            isSvg: true, size: compact ? 24 : 28, tooltip: 'Try on'),
         const SizedBox(width: 8),
-        _iconButton('assets/images/navigation/notifications.png',
-            size: compact ? 24 : 28, tooltip: 'Notifications'),
+        _iconButton('assets/images/navigation/notifications.svg',
+            isSvg: true, size: compact ? 24 : 28, tooltip: 'Notifications'),
         const SizedBox(width: 8),
         _iconButton('assets/images/navigation/Generic avatar (1).png',
+            isSvg: false,
             size: compact ? 28 : 32, tooltip: 'Profile', onTap: () {
           final String? current = ModalRoute.of(context)?.settings.name;
           if (current != '/profile') {
@@ -429,9 +450,17 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
     );
   }
 
-  Widget _iconButton(String asset,
-      {double size = 28, String? tooltip, VoidCallback? onTap}) {
-    final Widget image = Image.asset(
+  Widget _iconButton(String asset, {bool isSvg = true,
+      required double size, String? tooltip, VoidCallback? onTap}) {
+    final Widget image = isSvg ? SvgPicture.asset(
+      asset,
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(Icons.image_outlined, size: size, color: Colors.black);
+      },
+    ) : Image.asset(
       asset,
       width: size,
       height: size,
@@ -484,10 +513,10 @@ class LoggedInBottomNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _bottomItem(context, index: 0, asset: 'assets/images/navigation/home_icon.png', route: '/explore'),
-          _bottomItem(context, index: 1, asset: 'assets/images/navigation/Wardrobe_icon.png', route: '/wardrobe'),
-          _bottomItem(context, index: 2, asset: 'assets/images/navigation/book_icon.png'),
-          _bottomItem(context, index: 3, asset: 'assets/images/navigation/shop_icon.png', route: '/marketplace'),
+          _bottomItem(context, index: 0, asset: 'assets/images/navigation/home_icon.svg', route: '/explore'),
+          _bottomItem(context, index: 1, asset: 'assets/images/navigation/Wardrobe_icon.svg', route: '/wardrobe'),
+          _bottomItem(context, index: 2, asset: 'assets/images/navigation/book_icon.svg'),
+          _bottomItem(context, index: 3, asset: 'assets/images/navigation/shop_icon.svg', route: '/marketplace'),
         ],
       ),
     );
@@ -507,7 +536,7 @@ class LoggedInBottomNavBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
+          SvgPicture.asset(
             asset,
             width: 28,
             height: 28,

@@ -105,7 +105,7 @@ To add your own logos and icons:
    - `share_icon.png` (40x40px)
 
 **Image Requirements:**
-- Format: PNG with transparency
+- Format: PNG/SVG with transparency
 - Style: Black and white theme
 - High resolution for retina displays
 - Transparent background preferred
@@ -117,6 +117,10 @@ The web version is currently in development. To run on web:
 ```bash
 flutter run -d chrome --web-browser-flag="--disable-web-security"
 ```
+
+## App Development
+
+The app version is not yet available. It maybe available in the future.
 
 ## Contributing
 

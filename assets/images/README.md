@@ -1,31 +1,31 @@
-# Assets Directory
+# 资产目录
 
-This directory contains all the images and logos used in the DripLix app.
+该目录用于存放DripLix应用中使用的所有图片和Logo。
 
-## Directory Structure
+## 目录结构
 
-- `logos/` - App logos and branding images
-  - `app_logo.png` - Main app logo (recommended: 512x512px)
-  - `app_logo_small.png` - Small version for navigation (recommended: 64x64px)
-  - `favicon.png` - Web favicon (recommended: 32x32px)
+- `logos/` - 应用Logo和品牌图片
+  - `app_logo.png` - 主应用Logo (推荐: 512x512px)
+  - `app_logo_small.png` - 导航栏小版本 (推荐: 64x64px)
+  - `favicon.png` - Web favicon (推荐: 32x32px)
 
-- `navigation/` - Navigation bar specific images
-  - `search_icon.png` - Search button icon
-  - `notification_icon.png` - Notification button icon
-  - `profile_icon.png` - Profile button icon
+- `navigation/` - 导航栏特定图片
+  - `search_icon.png` - 搜索按钮图标
+  - `notification_icon.png` - 通知按钮图标
+  - `profile_icon.png` - 个人中心按钮图标
 
-- `icons/` - General app icons
-  - `explore_icon.png` - Explore feature icon
-  - `save_icon.png` - Save feature icon
-  - `share_icon.png` - Share feature icon
+- `icons/` - 通用应用图标
+  - `explore_icon.png` - 探索功能图标
+  - `save_icon.png` - 保存功能图标
+  - `share_icon.png` - 分享功能图标
 
-## Image Requirements
+## 图片要求
 
-- **Format**: PNG with transparency support
-- **Resolution**: High resolution (2x or 3x for retina displays)
-- **Style**: Black and white theme to match the app design
-- **Background**: Transparent or white background
+- **格式**: PNG/SVG格式，支持透明度
+- **分辨率**: 高分辨率 (2x或3x适用于Retina显示屏)
+- **风格**: 黑白色主题，与应用设计匹配
+- **背景**: 透明或白色背景
 
-## Usage
+## 使用方法
 
-Add your images to the appropriate directories and update the `pubspec.yaml` file to include them in the assets section.
+将您的图片添加到适当的目录中，并更新`pubspec.yaml`文件以将它们包含在资产部分中。

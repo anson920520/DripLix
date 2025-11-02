@@ -1,10 +1,10 @@
 {
-    "@@locale": "zh_CN",
+    "@@locale": "ru",
     "appName": "DripLix",
     "@appName": {
         "description": "The name of the app"
     },
-    "appDescription": "照片交换应用，类似于Pinterest的图片分享平台",
+    "appDescription": "Приложение для обмена фотографиями, похожее на Pinterest",
     "@appDescription": {
         "description": "The description of the app"
     },
@@ -16,7 +16,7 @@
     "@appAuthor": {
         "description": "The author of the app"
     },
-    "appLicense": "GNU通用公共许可证v3.0",
+    "appLicense": "Стандартная общественная лицензия GNU v3.0",
     "@appLicense": {
         "description": "The license of the app"
     }
