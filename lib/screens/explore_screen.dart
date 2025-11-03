@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../widgets/navigation_bar.dart';
 import '../widgets/logged_in_navigation_bar.dart';
@@ -27,8 +28,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   String? _hoveredPostId;
   bool _showSignUpPopup = false;
   bool _showSignInPopup = false;
-  bool _autoFillingLastRow = false;
-  int _lastAutoFillAtCount = -1;
 
   // Data state for OOTD（保持原实现，后续可迁移到ViewModel）
   final List<svc.OotdItem> _ootdItems = <svc.OotdItem>[];
@@ -410,7 +409,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // Removed unused _computeColumns
+  // Calculate column count based on screen width
+  int _calculateColumnCount(double width) {
+    if (width < 600) {
+      return 1;
+    } else if (width < 900) {
+      return 2;
+    } else if (width < 1200) {
+      return 3;
+    } else {
+      return 4;
+    }
+  }
 
   Widget _buildDropdownItem(String text, {bool compact = false}) {
     final bool isHovered = _hoveredItem == text;
@@ -482,78 +492,36 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // Add helper to build justified feed rows
+  // Build masonry waterfall feed layout
   Widget _buildJustifiedFeed(double maxWidth, List<svc.ExplorePost> feedPosts) {
-    const double spacing = 16;
-    const double targetRowHeight =
-        260; // base row height; rows will scale to fit width
-    // First pass: group items into rows at target height
-    final List<List<svc.ExplorePost>> rowsData = <List<svc.ExplorePost>>[];
-    List<svc.ExplorePost> currentRow = <svc.ExplorePost>[];
-    double aspectSum = 0.0;
-
-    for (final svc.ExplorePost post in feedPosts) {
-      final double aspect = (post.width > 0 && post.height > 0)
-          ? (post.width / post.height)
-          : 1.0;
-      final double prospectiveAspectSum = aspectSum + aspect;
-      final int prospectiveCount = currentRow.length + 1;
-      final double totalSpacing = spacing * (prospectiveCount - 1);
-      final double prospectiveRowWidth =
-          (targetRowHeight * prospectiveAspectSum) + totalSpacing;
-
-      if (prospectiveRowWidth > maxWidth && currentRow.isNotEmpty) {
-        rowsData.add(currentRow);
-        currentRow = <svc.ExplorePost>[];
-        aspectSum = 0.0;
-      }
-      currentRow.add(post);
-      aspectSum += aspect;
-    }
-    if (currentRow.isNotEmpty) {
-      rowsData.add(currentRow);
+    if (feedPosts.isEmpty) {
+      return const SizedBox.shrink();
     }
 
-    // If last row has less than 4 items, trigger auto-load (no borrowing) until filled
-    if (rowsData.isNotEmpty && rowsData.last.length < 4) {
-      if (_lastAutoFillAtCount != feedPosts.length) {
-        _lastAutoFillAtCount = feedPosts.length;
-        _autoFillingLastRow = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            ref.read(exploreViewModelProvider.notifier).loadMore();
-          }
-        });
-      }
-    } else {
-      _autoFillingLastRow = false;
-    }
+    const double spacing = 16.0;
+    final int columnCount = _calculateColumnCount(maxWidth);
 
-    // Render rows: justify all rows to fill width cleanly
-    final List<Widget> rows = <Widget>[];
-    for (int r = 0; r < rowsData.length; r++) {
-      final List<svc.ExplorePost> row = rowsData[r];
-      if (row.isEmpty) continue;
-      final int n = row.length;
-      final double totalSpacing = spacing * (n - 1);
-      double rowAspectSum = 0.0;
-      for (final svc.ExplorePost p in row) {
-        rowAspectSum +=
-            (p.width > 0 && p.height > 0) ? (p.width / p.height) : 1.0;
-      }
-      final double rowHeight = (maxWidth - totalSpacing) / rowAspectSum;
-      final List<Widget> tiles = <Widget>[];
-      for (final svc.ExplorePost post in row) {
-        final double aspect = (post.width > 0 && post.height > 0)
-            ? (post.width / post.height)
-            : 1.0;
-        final double tileWidth = rowHeight * aspect;
+    return MasonryGridView.count(
+      crossAxisCount: columnCount,
+      mainAxisSpacing: spacing,
+      crossAxisSpacing: spacing,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: feedPosts.length,
+      itemBuilder: (context, index) {
+        final svc.ExplorePost post = feedPosts[index];
         final bool isHovered = _hoveredPostId == post.id;
-        tiles.add(
-          SizedBox(
-            width: tileWidth,
-            height: rowHeight,
-            child: MouseRegion(
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Get the actual width allocated by MasonryGridView
+            // final double actualWidth = constraints.maxWidth;
+            // final double aspect = (post.width > 0 && post.height > 0)
+            //     ? (post.width / post.height)
+            //     : 1.0;
+            // final double itemHeight = actualWidth / aspect;
+
+            return MouseRegion(
               onEnter: (_) {
                 setState(() {
                   _hoveredPostId = post.id;
@@ -578,56 +546,34 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   },
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            image: DecorationImage(
-                              image: AssetImage(post.imageUrl),
-                              fit: BoxFit.cover,
+                    child: Container(
+                      width: double.infinity,
+                      // height: itemHeight,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                      ),
+                      child: Image.asset(
+                        post.imageUrl,
+                        // width: actualWidth,
+                        // height: itemHeight,
+                        fit: BoxFit.scaleDown,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Icon(Icons.image, color: Colors.black45),
                             ),
-                          ),
-                        ),
-                        // No edit overlay on Explore page
-                      ],
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
-      }
-      rows.add(
-        Padding(
-          padding:
-              EdgeInsets.only(bottom: r == rowsData.length - 1 ? 0 : spacing),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: List<Widget>.generate(tiles.length * 2 - 1, (int i) {
-              if (i.isOdd) return const SizedBox(width: spacing);
-              return tiles[i ~/ 2];
-            }),
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        ...rows,
-        if (_autoFillingLastRow)
-          const Padding(
-            padding: EdgeInsets.only(top: 12.0),
-            child: SizedBox(
-              height: 24,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-            ),
-          ),
-      ],
+      },
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../services/auth_state.dart';
 import '../widgets/logged_in_navigation_bar.dart';
@@ -713,8 +714,8 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(
-                          'assets/images/wardrobe/iconstack.io - (Hanger).png',
+                        child: SvgPicture.asset(
+                          'assets/images/wardrobe/iconstack.io - (Hanger).svg',
                           width: addIconSize,
                           height: addIconSize,
                           errorBuilder: (c, e, s) => SizedBox(
