@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../services/auth_state.dart';
 import '../widgets/logged_in_navigation_bar.dart';
@@ -861,10 +862,10 @@ class _KeywordArrow extends StatelessWidget {
           shape: const CircleBorder(),
           backgroundColor: Colors.white,
         ),
-        child: Image.asset(
+        child: SvgPicture.asset(
           isLeft 
-            ? 'assets/images/homepage/button/chevron_backward.png'
-            : 'assets/images/homepage/button/chevron_forward.png',
+            ? 'assets/images/homepage/button/chevron_backward.svg'
+            : 'assets/images/homepage/button/chevron_forward.svg',
           width: 16,
           height: 16,
           errorBuilder: (context, error, stackTrace) {

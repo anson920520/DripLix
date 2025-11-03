@@ -137,7 +137,7 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                       if (showExplore)
                         _buildNavButton(
                           '',
-                          'assets/images/navigation/Explore_tab.png',
+                          'assets/images/navigation/Explore_tab.svg',
                           onTap: () {
                             Navigator.of(context).pushNamed('/explore');
                           },
@@ -146,22 +146,22 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                       if (showAuth)
                         _buildNavButton(
                           '',
-                          'assets/images/navigation/Sign_in_tab.png',
+                          'assets/images/navigation/Sign_in_tab.svg',
                           onTap: widget.onSignIn,
                         ),
                       if (showAuth) const SizedBox(width: 8),
                       if (showAuth)
                         _buildNavButton(
                           '',
-                          'assets/images/navigation/Sign_up_tab.png',
+                          'assets/images/navigation/Sign_up_tab.svg',
                           onTap: widget.onSignUp,
                         ),
                       if (showAuth) const SizedBox(width: 8),
                       _buildNavButton(
                         '',
                         widget.isListUnfolded
-                            ? 'assets/images/navigation/unfolded_list_icon.png'
-                            : 'assets/images/navigation/folded_list_icon.png',
+                            ? 'assets/images/navigation/unfolded_list_icon.svg'
+                            : 'assets/images/navigation/folded_list_icon.svg',
                         onTap: widget.onListToggle,
                       ),
                       if (needsOverflowMenu) const SizedBox(width: 8),
@@ -239,15 +239,15 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
     );
   }
 
-  Widget _buildNavButton(String text, String imagePath, {VoidCallback? onTap}) {
+  Widget _buildNavButton(String text, String svgPath, {VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap ?? () {},
       child: Container(
         width: 100.0,
         height: 70.0,
         padding: const EdgeInsets.all(2.0),
-        child: Image.asset(
-          imagePath,
+        child: SvgPicture.asset(
+          svgPath,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return Container(
@@ -294,8 +294,8 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
         child: Row(
           children: [
             // Logo inside search bar (left)
-            Image.asset(
-              'assets/images/navigation/Searchbar/Logo.png',
+            SvgPicture.asset(
+              'assets/images/navigation/Searchbar/Logo.svg',
               height: logoH,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(Icons.store_mall_directory,
@@ -327,8 +327,8 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                 width: isTight ? 36 : 40,
                 height: isTight ? 36 : 40,
                 alignment: Alignment.center,
-                child: Image.asset(
-                  'assets/images/navigation/Searchbar/Search.png',
+                child: SvgPicture.asset(
+                  'assets/images/navigation/Searchbar/Search.svg',
                   width: iconSize,
                   height: iconSize,
                   fit: BoxFit.contain,
@@ -366,8 +366,8 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           children: [
-            Image.asset(
-              'assets/images/navigation/Searchbar/Logo.png',
+            SvgPicture.asset(
+              'assets/images/navigation/Searchbar/Logo.svg',
               height: logoH,
               errorBuilder: (context, error, stackTrace) {
                 return const Icon(Icons.store_mall_directory,
@@ -396,8 +396,8 @@ class _CustomNavigationBarState extends State<CustomNavigationBar> {
                 width: isTight ? 36 : 40,
                 height: isTight ? 36 : 40,
                 alignment: Alignment.center,
-                child: Image.asset(
-                  'assets/images/navigation/Searchbar/Search.png',
+                child: SvgPicture.asset(
+                  'assets/images/navigation/Searchbar/Search.svg',
                   width: iconSize,
                   height: iconSize,
                   fit: BoxFit.contain,

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_receiver.dart';
 import '../services/auth_state.dart';
 import '../config/debug_flags.dart';
+import 'package:flutter_svg/svg.dart';
 
 class SignUpPopup extends ConsumerStatefulWidget {
   final VoidCallback? onClose;
@@ -423,8 +424,8 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
                         color: Colors.transparent,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Image.asset(
-                        'assets/images/signup/cancel.png',
+                      child: SvgPicture.asset(
+                        'assets/images/signup/cancel.svg',
                         width: 20,
                         height: 20,
                         fit: BoxFit.contain,
@@ -539,8 +540,8 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Image.asset(
-                      'assets/images/signup/get_code.png',
+                    child: SvgPicture.asset(
+                      'assets/images/signup/get_code.svg',
                       width: 60,
                       height: 30,
                       fit: BoxFit.cover,
@@ -654,10 +655,10 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Image.asset(
+                    child: SvgPicture.asset(
                       _isListUnfolded
-                          ? 'assets/images/signup/unfolded_list_icon.png'
-                          : 'assets/images/signup/folded_list_icon.png',
+                          ? 'assets/images/navigation/unfolded_list_icon.svg'
+                          : 'assets/images/navigation/folded_list_icon.svg',
                       width: 20,
                       height: 20,
                       fit: BoxFit.contain,
@@ -833,8 +834,8 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
               ),
             ],
           ),
-          child: Image.asset(
-            'assets/images/signup/Sign_up_tab (1).png',
+          child: SvgPicture.asset(
+            'assets/images/signup/Sign_up_tab.svg',
             width: 100,
             height: 40,
             fit: BoxFit.cover,

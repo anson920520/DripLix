@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ProductImagePopup extends StatefulWidget {
   final String title;
@@ -56,7 +57,7 @@ class _ProductImagePopupState extends State<ProductImagePopup> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -245,11 +246,11 @@ class _ImageNavigationArrow extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -261,10 +262,10 @@ class _ImageNavigationArrow extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(16),
           child: Center(
-            child: Image.asset(
+            child: SvgPicture.asset(
               isLeft 
-                ? 'assets/images/homepage/button/chevron_backward.png'
-                : 'assets/images/homepage/button/chevron_forward.png',
+                ? 'assets/images/homepage/button/chevron_backward.svg'
+                : 'assets/images/homepage/button/chevron_forward.svg',
               width: 16,
               height: 16,
               errorBuilder: (context, error, stackTrace) {

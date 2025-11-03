@@ -5,6 +5,7 @@ import '../widgets/logged_in_navigation_bar.dart';
 import '../services/auth_state.dart';
 import '../widgets/signup_popup.dart';
 import '../widgets/signin_popup.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -118,7 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: _buildNavButton(
-                          'assets/images/homepage/button/chevron_backward.png',
+                          'assets/images/homepage/button/chevron_backward.svg',
                           () {
                             setState(() {
                               _currentIndex =
@@ -135,7 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: _buildNavButton(
-                          'assets/images/homepage/button/chevron_forward.png',
+                          'assets/images/homepage/button/chevron_forward.svg',
                           () {
                             setState(() {
                               _currentIndex =
@@ -308,7 +309,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: SizedBox(
         width: isMobile ? 56 : 80,
         height: isMobile ? 56 : 80,
-        child: Image.asset(
+        child: SvgPicture.asset(
           imagePath,
           width: isMobile ? 56 : 80,
           height: isMobile ? 56 : 80,

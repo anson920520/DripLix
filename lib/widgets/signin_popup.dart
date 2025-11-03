@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart';
 import '../services/auth_receiver.dart';
 import '../services/auth_state.dart';
 import '../config/debug_flags.dart';
@@ -327,8 +328,8 @@ class _SignInPopupState extends ConsumerState<SignInPopup> {
                         color: Colors.transparent,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Image.asset(
-                        'assets/images/signin/cancel.png',
+                      child: SvgPicture.asset(
+                        'assets/images/signin/cancel.svg',
                         width: 20,
                         height: 20,
                         fit: BoxFit.contain,
@@ -431,10 +432,10 @@ class _SignInPopupState extends ConsumerState<SignInPopup> {
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Image.asset(
+                    child: SvgPicture.asset(
                       _isListUnfolded
-                          ? 'assets/images/signin/unfolded_list_icon.png'
-                          : 'assets/images/signin/folded_list_icon.png',
+                          ? 'assets/images/navigation/unfolded_list_icon.svg'
+                          : 'assets/images/navigation/folded_list_icon.svg',
                       width: 20,
                       height: 20,
                       fit: BoxFit.contain,
@@ -586,8 +587,8 @@ class _SignInPopupState extends ConsumerState<SignInPopup> {
               ),
             ],
           ),
-          child: Image.asset(
-            'assets/images/navigation/Sign_in_tab.png',
+          child: SvgPicture.asset(
+            'assets/images/navigation/Sign_in_tab.svg',
             width: 100,
             height: 40,
             fit: BoxFit.cover,

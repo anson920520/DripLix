@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter_svg/svg.dart';
 
 class EditProfilePopup extends StatefulWidget {
   final String initialCustomName;
@@ -207,8 +208,8 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
               InkWell(
                 onTap: () => controller.clear(),
                 borderRadius: BorderRadius.circular(6),
-                child: Image.asset(
-                  'assets/images/signup/cancel.png',
+                child: SvgPicture.asset(
+                  'assets/images/signup/cancel.svg',
                   width: 18,
                   height: 18,
                   errorBuilder: (context, error, stackTrace) {
@@ -339,8 +340,8 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                 InkWell(
                   onTap: () => userController.clear(),
                   borderRadius: BorderRadius.circular(6),
-                  child: Image.asset(
-                    'assets/images/signin/cancel.png',
+                  child: SvgPicture.asset(
+                    'assets/images/signin/cancel.svg',
                     width: 18,
                     height: 18,
                     errorBuilder: (context, error, stackTrace) {

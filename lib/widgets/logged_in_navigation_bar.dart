@@ -129,8 +129,8 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                               },
                               borderRadius: BorderRadius.circular(12),
                               child: Center(
-                                child: Image.asset(
-                                  'assets/images/navigation/Searchbar/Search.png',
+                                child: SvgPicture.asset(
+                                  'assets/images/navigation/Searchbar/Search.svg',
                                   width: 32,
                                   height: 32,
                                   fit: BoxFit.contain,
@@ -191,8 +191,8 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                             children: [
                               const SizedBox(width: 12),
                               // Logo inside search bar
-                              Image.asset(
-                                'assets/images/navigation/Searchbar/Logo.png',
+                              SvgPicture.asset(
+                                'assets/images/navigation/Searchbar/Logo.svg',
                                 height: screenWidth < 520 ? 20 : (screenWidth < 720 ? 24 : 28),
                                 errorBuilder: (context, error, stackTrace) {
                                   return const Icon(Icons.store_mall_directory,
@@ -226,8 +226,8 @@ class _LoggedInNavigationBarState extends State<LoggedInNavigationBar>
                                 borderRadius: BorderRadius.circular(12),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    'assets/images/navigation/Searchbar/Search.png',
+                                  child: SvgPicture.asset(
+                                    'assets/images/navigation/Searchbar/Search.svg',
                                     width: screenWidth < 520 ? 20 : 24,
                                     height: screenWidth < 520 ? 20 : 24,
                                     fit: BoxFit.contain,

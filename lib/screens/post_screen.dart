@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../widgets/navigation_bar.dart';
 import '../widgets/logged_in_navigation_bar.dart';
@@ -909,7 +910,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -919,7 +920,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
         child: Row(
           children: [
             _assetIconButton(
-              assetPath: 'assets/images/post/favorite.png',
+              assetPath: 'assets/images/post/favorite.svg',
               size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
@@ -943,7 +944,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     fontWeight: FontWeight.w600)),
             const SizedBox(width: 16),
             _assetIconButton(
-              assetPath: 'assets/images/post/View.png',
+              assetPath: 'assets/images/post/View.svg',
               size: compact ? 22 : 24,
               onTap: () {},
               tooltip: 'Views',
@@ -955,7 +956,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
                     fontWeight: FontWeight.w600)),
             const Spacer(),
             _assetIconButton(
-              assetPath: 'assets/images/post/Share.png',
+              assetPath: 'assets/images/post/Share.svg',
               size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
@@ -970,7 +971,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             ),
             const SizedBox(width: 12),
             _assetIconButton(
-              assetPath: 'assets/images/post/bookmark.png',
+              assetPath: 'assets/images/post/bookmark.svg',
               size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
@@ -988,7 +989,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
             ),
             const SizedBox(width: 12),
             _assetIconButton(
-              assetPath: 'assets/images/post/Wardrobe.png',
+              assetPath: 'assets/images/post/Wardrobe.svg',
               size: compact ? 22 : 24,
               onTap: () {
                 final bool isLoggedIn = ref.read(authProvider);
@@ -1016,7 +1017,7 @@ class _PostScreenState extends ConsumerState<PostScreen> {
     VoidCallback? onTap,
     String? tooltip,
   }) {
-    final Widget image = Image.asset(
+    final Widget image = SvgPicture.asset(
       assetPath,
       width: size,
       height: size,
