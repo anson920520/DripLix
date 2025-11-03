@@ -280,37 +280,57 @@ class _PostScreenState extends ConsumerState<PostScreen> {
               ),
             ),
           if (_showSignUpPopup)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: SignUpPopup(
-                onClose: () {
-                  setState(() {
-                    _showSignUpPopup = false;
-                  });
-                },
-                onSignIn: () {
-                  setState(() {
-                    _showSignUpPopup = false;
-                    _showSignInPopup = true;
-                  });
-                },
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showSignUpPopup = false;
+                });
+              },
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: GestureDetector(
+                  onTap: () {}, // 阻止事件冒泡
+                  child: SignUpPopup(
+                    onClose: () {
+                      setState(() {
+                        _showSignUpPopup = false;
+                      });
+                    },
+                    onSignIn: () {
+                      setState(() {
+                        _showSignUpPopup = false;
+                        _showSignInPopup = true;
+                      });
+                    },
+                  ),
+                ),
               ),
             ),
           if (_showSignInPopup)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: SignInPopup(
-                onClose: () {
-                  setState(() {
-                    _showSignInPopup = false;
-                  });
-                },
-                onSignUp: () {
-                  setState(() {
-                    _showSignInPopup = false;
-                    _showSignUpPopup = true;
-                  });
-                },
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showSignInPopup = false;
+                });
+              },
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: GestureDetector(
+                  onTap: () {}, // 阻止事件冒泡
+                  child: SignInPopup(
+                    onClose: () {
+                      setState(() {
+                        _showSignInPopup = false;
+                      });
+                    },
+                    onSignUp: () {
+                      setState(() {
+                        _showSignInPopup = false;
+                        _showSignUpPopup = true;
+                      });
+                    },
+                  ),
+                ),
               ),
             ),
           if (isLoggedIn)

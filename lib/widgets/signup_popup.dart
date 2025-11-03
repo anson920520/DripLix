@@ -327,15 +327,42 @@ class _SignUpPopupState extends ConsumerState<SignUpPopup> {
           topRight: Radius.circular(12),
         ),
       ),
-      child: Center(
-        child: Text(
-          'Sign Up',
-          style: GoogleFonts.notoSerif(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+      child: Stack(
+        children: [
+          Center(
+            child: Text(
+              'Sign Up',
+              style: GoogleFonts.notoSerif(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
           ),
-        ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: InkWell(
+              onTap: () {
+                widget.onClose?.call();
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.close,
+                  size: 24,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
